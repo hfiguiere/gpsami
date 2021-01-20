@@ -52,7 +52,8 @@ fn post_event(sender: &glib::Sender<MgAction>, action: MgAction) {
 }
 
 pub struct MgApplication {
-    window: gtk::ApplicationWindow,
+    gapp: gtk::Application,
+    window_id: u32,
     content_box: gtk::Box,
     erase_checkbtn: gtk::CheckButton,
     model_combo: gtk::ComboBox,
@@ -70,15 +71,19 @@ pub struct MgApplication {
 impl MgApplication {
     pub fn new(gapp: &gtk::Application) -> Rc<RefCell<Self>> {
         let builder = gtk::Builder::from_resource("/net/figuiere/gpsami/mgwindow.ui");
-        let window: gtk::ApplicationWindow = builder.get_object("main_window").unwrap();
         let content_box = builder.get_object::<gtk::Box>("content_box").unwrap();
+        let window = gtk::ApplicationWindowBuilder::new()
+            .application(gapp)
+            .default_height(400)
+            .default_width(400)
+            .child(&content_box)
+            .build();
         let erase_checkbtn: gtk::CheckButton = builder.get_object("erase_checkbtn").unwrap();
         let model_combo: gtk::ComboBox = builder.get_object("model_combo").unwrap();
         let port_combo: gtk::ComboBox = builder.get_object("port_combo").unwrap();
         let output_dir_chooser: FileChooserButton =
             builder.get_object("output_dir_chooser").unwrap();
 
-        gapp.add_window(&window);
 
         let (sender, receiver) = glib::MainContext::channel::<MgAction>(glib::PRIORITY_DEFAULT);
 
@@ -134,7 +139,8 @@ impl MgApplication {
             });
 
         let app = MgApplication {
-            window,
+            gapp: gapp.clone(),
+            window_id: window.get_id(),
             content_box,
             erase_checkbtn,
             model_combo,
@@ -177,9 +183,10 @@ impl MgApplication {
         }
         let device = device.unwrap();
 
+        let window = self.gapp.get_window_by_id(self.window_id);
         let chooser = gtk::FileChooserDialog::new(
             Some("Save File"),
-            Some(&self.window),
+            window.as_ref(),
             gtk::FileChooserAction::Save,
             &[],
         );
@@ -250,8 +257,9 @@ impl MgApplication {
     }
 
     fn report_error(&self, message: &str, reason: &str) {
+        let window = self.gapp.get_window_by_id(self.window_id);
         let dialog = gtk::MessageDialog::new(
-            Some(&self.window),
+            window.as_ref(),
             gtk::DialogFlags::MODAL,
             gtk::MessageType::Error,
             gtk::ButtonsType::Close,
@@ -334,7 +342,9 @@ impl MgApplication {
         utils::setup_text_combo(&self.model_combo, &self.model_store);
         utils::setup_text_combo(&self.port_combo, &self.port_store);
         self.populate_model_combo();
-        self.window.show();
+        if let Some(window) = self.gapp.get_window_by_id(self.window_id) {
+            window.present();
+        }
     }
 
     /// Rescan devices. On start and when new device is connected.
@@ -388,7 +398,9 @@ impl MgApplication {
 
     fn update_device_capability(&self, capability: &devices::Capability) {
         self.erase_checkbtn.set_sensitive(capability.can_erase);
-        if let Some(a) = self.window.lookup_action("erase") {
+        if let Some(a) = self.gapp.get_window_by_id(self.window_id)
+                .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
+                .and_then(|w| w.lookup_action("erase")) {
             if let Ok(sa) = a.downcast::<gio::SimpleAction>() {
                 sa.set_enabled(capability.can_erase_only);
             }
@@ -402,7 +414,10 @@ impl MgApplication {
         }
 
         self.device_manager.set_port(id);
-        if let Some(a) = self.window.lookup_action("download") {
+
+        if let Some(a) = self.gapp.get_window_by_id(self.window_id)
+                .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
+                .and_then(|w| w.lookup_action("download")) {
             if let Ok(sa) = a.downcast::<gio::SimpleAction>() {
                 sa.set_enabled(id != "");
             }

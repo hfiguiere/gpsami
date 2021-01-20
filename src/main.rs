@@ -12,6 +12,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern crate dirs;
+#[macro_use]
+extern crate gtk_macros;
 extern crate gudev;
 extern crate libudev;
 extern crate rustc_serialize;
@@ -75,10 +77,19 @@ fn main() {
     gapp.connect_activate(move |gapp| {
         let app = MgApplication::new(&gapp);
 
+        action!(
+            gapp,
+            "quit",
+            glib::clone!(@weak gapp => move |_, _| {
+                gapp.quit();
+            })
+        );
+
         app.borrow_mut().start();
     });
 
-    gapp.run(&[]);
+    let ret = gapp.run(&std::env::args().collect::<Vec<_>>());
+    std::process::exit(ret);
 }
 
 #[test]

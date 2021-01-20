@@ -388,6 +388,7 @@ version = "0.1.0"
 dependencies = [
  "dirs",
  "gettext-rs",
+ "gtk-macros",
  "gtk4",
  "gudev",
  "libudev",
@@ -444,6 +445,12 @@ dependencies = [
  "pango-sys",
  "system-deps",
 ]
+
+[[package]]
+name = "gtk-macros"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1874c48e670519ce192093ac906c08a6dde7cb2d18b28722ef237726a39c3a63"
 
 [[package]]
 name = "gtk4"

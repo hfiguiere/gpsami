@@ -1,111 +1,100 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <object class="GtkApplicationWindow" id="main_window">
+  <object class="GtkBox" id="content_box">
     <property name="can_focus">0</property>
-    <property name="title" translatable="yes">GPS Ami</property>
-    <property name="default_width">400</property>
-    <property name="default_height">400</property>
+    <property name="margin-start">10</property>
+    <property name="margin-end">10</property>
+    <property name="margin_top">10</property>
+    <property name="margin_bottom">10</property>
+    <property name="orientation">vertical</property>
+    <property name="spacing">4</property>
     <child>
-      <placeholder/>
-    </child>
-    <child>
-      <object class="GtkBox" id="content_box">
+      <object class="GtkFrame" id="gps_device_frame">
         <property name="can_focus">0</property>
-        <property name="margin-start">10</property>
-        <property name="margin-end">10</property>
-        <property name="margin_top">10</property>
-        <property name="margin_bottom">10</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">4</property>
         <child>
-          <object class="GtkFrame" id="gps_device_frame">
+          <object class="GtkBox" id="box3">
             <property name="can_focus">0</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">4</property>
             <child>
-              <object class="GtkBox" id="box3">
+              <object class="GtkComboBox" id="model_combo">
                 <property name="can_focus">0</property>
-                <property name="orientation">vertical</property>
-                <property name="spacing">4</property>
-                <child>
-                  <object class="GtkComboBox" id="model_combo">
-                    <property name="can_focus">0</property>
-                    <property name="margin-start">24</property>
-                    <property name="margin-end">4</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkComboBox" id="port_combo">
-                    <property name="margin-start">24</property>
-                    <property name="margin-end">4</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="erase_checkbtn">
-                    <property name="label" translatable="yes">_Erase after download</property>
-                    <property name="use_underline">1</property>
-                    <property name="margin-start">24</property>
-                    <property name="margin-end">4</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child type="label">
-              <object class="GtkLabel" id="label1">
-                <property name="can_focus">0</property>
-                <property name="label" translatable="yes">&lt;b&gt;GPS Device&lt;/b&gt;</property>
-                <property name="use_markup">1</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkFrame" id="output_frame">
-            <property name="can_focus">0</property>
-            <child>
-              <object class="FileChooserButton" id="output_dir_chooser">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
                 <property name="margin-start">24</property>
                 <property name="margin-end">4</property>
               </object>
             </child>
-            <child type="label">
-              <object class="GtkLabel" id="label3">
-                <property name="can_focus">0</property>
-                <property name="label" translatable="yes">&lt;b&gt;Output&lt;/b&gt;</property>
-                <property name="use_markup">1</property>
+            <child>
+              <object class="GtkComboBox" id="port_combo">
+                <property name="margin-start">24</property>
+                <property name="margin-end">4</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkCheckButton" id="erase_checkbtn">
+                <property name="label" translatable="yes">_Erase after download</property>
+                <property name="use_underline">1</property>
+                <property name="margin-start">24</property>
+                <property name="margin-end">4</property>
               </object>
             </child>
           </object>
         </child>
-        <child>
-          <object class="GtkBox">
-            <property name="vexpand">True</property>
-            <property name="orientation">vertical</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox" id="box1">
+        <child type="label">
+          <object class="GtkLabel" id="label1">
             <property name="can_focus">0</property>
-            <property name="spacing">4</property>
-            <property name="homogeneous">1</property>
-            <child>
-              <object class="GtkButton" id="download_btn">
-                <property name="label" translatable="yes">Download</property>
-                <property name="receives_default">1</property>
-                <property name="action_name">win.download</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="erase_btn">
-                <property name="label" translatable="yes">Erase</property>
-                <property name="receives_default">1</property>
-                <property name="action_name">win.erase</property>
-              </object>
-            </child>
-            <child>
-            </child>
+            <property name="label" translatable="yes">&lt;b&gt;GPS Device&lt;/b&gt;</property>
+            <property name="use_markup">1</property>
           </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkFrame" id="output_frame">
+        <property name="can_focus">0</property>
+        <child>
+          <object class="FileChooserButton" id="output_dir_chooser">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin-start">24</property>
+            <property name="margin-end">4</property>
+          </object>
+        </child>
+        <child type="label">
+          <object class="GtkLabel" id="label3">
+            <property name="can_focus">0</property>
+            <property name="label" translatable="yes">&lt;b&gt;Output&lt;/b&gt;</property>
+            <property name="use_markup">1</property>
+          </object>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox">
+        <property name="vexpand">True</property>
+        <property name="orientation">vertical</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkBox" id="box1">
+        <property name="can_focus">0</property>
+        <property name="spacing">4</property>
+        <property name="homogeneous">1</property>
+        <child>
+          <object class="GtkButton" id="download_btn">
+            <property name="label" translatable="yes">Download</property>
+            <property name="receives_default">1</property>
+            <property name="action_name">win.download</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton" id="erase_btn">
+            <property name="label" translatable="yes">Erase</property>
+            <property name="receives_default">1</property>
+            <property name="action_name">win.erase</property>
+          </object>
+        </child>
+        <child>
         </child>
       </object>
     </child>

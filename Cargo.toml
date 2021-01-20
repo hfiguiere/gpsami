@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 gtk4 = { version="0.1", git = "https://github.com/gtk-rs/gtk4-rs/" }
+gtk-macros = "0.2.0"
 rustc-serialize = "0.3"
 libudev = "0.2.0"
 gudev = { version="^0.10.0", git = "https://gitlab.gnome.org/hub/gudev-rs/", branch = "unstable" }
