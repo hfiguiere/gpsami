@@ -14,7 +14,7 @@ See `doc/devices.md` for information about device support.
 To build
 --------
 
-You need meson and Rust to build. You also need gtk3 and gudev.
+You need meson and Rust to build. You also need gtk4 and gudev.
 
 To configure the (release) build do:
 
