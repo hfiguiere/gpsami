@@ -1,8 +1,8 @@
 {
     "app-id" : "net.figuiere.gpsami",
-    "runtime" : "org.gnome.Platform",
-    "runtime-version" : "3.38",
-    "sdk" : "org.gnome.Sdk",
+    "runtime" : "org.kde.Platform",
+    "runtime-version" : "5.15",
+    "sdk" : "org.kde.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
@@ -95,10 +95,37 @@
                             "commands": ["autoreconf -si"]
                         }
                     ]
+                },
+                {
+	            "name" : "graphene",
+                    "buildsystem": "meson",
+                    "builddir": true,
+                    "config-opts" : ["-Dgtk_doc=false", "-Dgobject_types=true"],
+                    "sources" : [
+                        {
+                            "type" : "git",
+                            "url" : "https://github.com/ebassi/graphene",
+                            "tag" : "1.10.0"
+                        }
+                    ]
                 }
             ]
         },
         "build-aux/gudev.json",
+        "build-aux/libusb.json",
+        {
+            "name": "gpsbabel",
+            "config-opts": [
+                "--with-zlib=system"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/gpsbabel/gpsbabel/archive/gpsbabel_1_6_0.tar.gz",
+                    "sha256": "ad56796f725dcdb7f52d9a9509d4922f11198c382fe10fc2d6c9efa8159f2090"
+                }
+            ]
+        },
         {
             "name" : "gpsami",
             "builddir" : true,
