@@ -12,6 +12,7 @@ rustc-serialize = "0.3"
 libudev = "0.2.0"
 gudev = { version="^0.10.0", git = "https://gitlab.gnome.org/hub/gudev-rs/", branch = "unstable" }
 dirs = "^1.0.5"
+once_cell = "1.5"
 
 gettext-rs = { version = "0.4.4", features = ["gettext-system"] }
 

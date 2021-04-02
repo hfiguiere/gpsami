@@ -84,7 +84,6 @@ impl MgApplication {
         let output_dir_chooser: FileChooserButton =
             builder.get_object("output_dir_chooser").unwrap();
 
-
         let (sender, receiver) = glib::MainContext::channel::<MgAction>(glib::PRIORITY_DEFAULT);
 
         let sender2 = sender.clone();
@@ -118,14 +117,14 @@ impl MgApplication {
         output_dir_chooser.connect_local(
             "file-set",
             true,
-            glib::clone!(@weak output_dir_chooser, @strong sender => move |w| {
+            glib::clone!(@weak output_dir_chooser, @strong sender => @default-return None, move |_| {
                 let file_name = output_dir_chooser.get_filename();
                 if let Some(f) = file_name {
                     post_event(&sender, MgAction::SetOutputDir(f));
                 }
                 None
-            }),
-        );
+            })
+        ).expect("connect signal failed");
 
         let device_manager = devices::Manager::new();
         let sender2 = sender.clone();
@@ -144,9 +143,9 @@ impl MgApplication {
             content_box,
             erase_checkbtn,
             model_combo,
-            model_store: gtk::ListStore::new(&[glib::Type::String, glib::Type::String]),
+            model_store: gtk::ListStore::new(&[glib::Type::STRING, glib::Type::STRING]),
             port_combo,
-            port_store: gtk::ListStore::new(&[glib::Type::String, glib::Type::String]),
+            port_store: gtk::ListStore::new(&[glib::Type::STRING, glib::Type::STRING]),
             device_manager,
             prefs_store: glib::KeyFile::new(),
             output_dest_dir: path::PathBuf::new(),
@@ -195,7 +194,7 @@ impl MgApplication {
             ("Cancel", gtk::ResponseType::Cancel),
         ]);
         if let Ok(output_dir) = self.prefs_store.get_string("output", "dir") {
-            chooser.set_current_folder(&gio::File::new_for_path(output_dir.as_str()));
+            let _ = chooser.set_current_folder(&gio::File::new_for_path(output_dir.as_str()));
         }
         chooser.show();
 
@@ -398,9 +397,12 @@ impl MgApplication {
 
     fn update_device_capability(&self, capability: &devices::Capability) {
         self.erase_checkbtn.set_sensitive(capability.can_erase);
-        if let Some(a) = self.gapp.get_window_by_id(self.window_id)
-                .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
-                .and_then(|w| w.lookup_action("erase")) {
+        if let Some(a) = self
+            .gapp
+            .get_window_by_id(self.window_id)
+            .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
+            .and_then(|w| w.lookup_action("erase"))
+        {
             if let Ok(sa) = a.downcast::<gio::SimpleAction>() {
                 sa.set_enabled(capability.can_erase_only);
             }
@@ -415,9 +417,12 @@ impl MgApplication {
 
         self.device_manager.set_port(id);
 
-        if let Some(a) = self.gapp.get_window_by_id(self.window_id)
-                .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
-                .and_then(|w| w.lookup_action("download")) {
+        if let Some(a) = self
+            .gapp
+            .get_window_by_id(self.window_id)
+            .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
+            .and_then(|w| w.lookup_action("download"))
+        {
             if let Ok(sa) = a.downcast::<gio::SimpleAction>() {
                 sa.set_enabled(id != "");
             }

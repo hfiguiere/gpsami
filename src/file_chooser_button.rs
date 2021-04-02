@@ -7,8 +7,7 @@ use std::path::{Path, PathBuf};
 
 use gtk4::gio;
 use gtk4::glib;
-use gtk4::glib::subclass;
-use gtk4::glib::Type;
+use gtk4::glib::subclass::Signal;
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 
@@ -49,20 +48,11 @@ impl FileChooserButton {
     }
 }
 
+#[derive(Default)]
 pub struct FileChooserButtonPriv {
     file: RefCell<Option<gio::File>>,
     dialog: RefCell<Option<gtk4::FileChooserNative>>,
 }
-
-static PROPERTIES: [subclass::Property; 1] = [subclass::Property("file", |file| {
-    glib::ParamSpec::object(
-        file,
-        "File",
-        "The chosen file",
-        gio::File::static_type(),
-        glib::ParamFlags::READWRITE,
-    )
-})];
 
 impl ObjectImpl for FileChooserButtonPriv {
     fn constructed(&self, obj: &Self::Type) {
@@ -89,7 +79,7 @@ impl ObjectImpl for FileChooserButtonPriv {
             file_chooser.connect_response(glib::clone!(@weak b => move |w, r| {
                 if r == gtk4::ResponseType::Accept {
                     print_on_err!(b.set_property("file", &w.get_file()));
-                    print_on_err!(b.emit("file-set", &[]));
+                    print_on_err!(b.emit_by_name("file-set", &[]));
                 }
                 let priv_ = FileChooserButtonPriv::from_instance(&b);
                 priv_.dialog.replace(None);
@@ -98,10 +88,29 @@ impl ObjectImpl for FileChooserButtonPriv {
         });
     }
 
-    fn set_property(&self, obj: &Self::Type, id: usize, value: &glib::Value) {
-        let prop = &PROPERTIES[id];
-        match *prop {
-            subclass::Property("file", ..) => {
+    fn properties() -> &'static [glib::ParamSpec] {
+        use once_cell::sync::Lazy;
+        static PROPERTIES: Lazy<Vec<glib::ParamSpec>> = Lazy::new(|| {
+            vec![glib::ParamSpec::object(
+                "file",
+                "File",
+                "The chosen file",
+                gio::File::static_type(),
+                glib::ParamFlags::READWRITE,
+            )]
+        });
+        PROPERTIES.as_ref()
+    }
+
+    fn set_property(
+        &self,
+        obj: &Self::Type,
+        _id: usize,
+        value: &glib::Value,
+        pspec: &glib::ParamSpec,
+    ) {
+        match pspec.get_name() {
+            "file" => {
                 let file = value
                     .get()
                     .expect("type conformity checked by `Object::set_property`");
@@ -114,36 +123,30 @@ impl ObjectImpl for FileChooserButtonPriv {
         }
     }
 
-    fn get_property(&self, _obj: &Self::Type, id: usize) -> glib::Value {
-        let prop = &PROPERTIES[id];
-        match *prop {
-            subclass::Property("file", ..) => self.file.borrow().to_value(),
+    fn get_property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+        match pspec.get_name() {
+            "file" => self.file.borrow().to_value(),
             _ => unimplemented!(),
         }
+    }
+
+    fn signals() -> &'static [Signal] {
+        use once_cell::sync::Lazy;
+        static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
+            vec![Signal::builder("file-set", &[], <()>::static_type().into())
+                .run_last()
+                .build()]
+        });
+        SIGNALS.as_ref()
     }
 }
 
 impl WidgetImpl for FileChooserButtonPriv {}
 impl ButtonImpl for FileChooserButtonPriv {}
 
+#[glib::object_subclass]
 impl ObjectSubclass for FileChooserButtonPriv {
     const NAME: &'static str = "FileChooserButton";
     type Type = FileChooserButton;
     type ParentType = gtk4::Button;
-    type Instance = subclass::simple::InstanceStruct<Self>;
-    type Class = subclass::simple::ClassStruct<Self>;
-
-    glib::object_subclass!();
-
-    fn class_init(klass: &mut Self::Class) {
-        klass.install_properties(&PROPERTIES);
-        klass.add_signal("file-set", glib::SignalFlags::RUN_LAST, &[], Type::Unit);
-    }
-
-    fn new() -> Self {
-        Self {
-            file: RefCell::new(None),
-            dialog: RefCell::new(None),
-        }
-    }
 }
