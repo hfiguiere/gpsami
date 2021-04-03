@@ -48,6 +48,12 @@ impl FileChooserButton {
     }
 }
 
+impl Default for FileChooserButton {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Default)]
 pub struct FileChooserButtonPriv {
     file: RefCell<Option<gio::File>>,

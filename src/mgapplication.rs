@@ -29,7 +29,7 @@ use crate::file_chooser_button::FileChooserButton;
 use crate::utils;
 use crate::Format;
 
-enum UIState {
+enum UiState {
     Idle,
     InProgress,
 }
@@ -241,7 +241,7 @@ impl MgApplication {
                         Ok(temp_output_filename) => {
                             println!("success {}", temp_output_filename.to_str().unwrap());
                             if let Err(e) = std::fs::copy(temp_output_filename, output_file) {
-                                MgAction::DoneDownload(drivers::Error::IOError(e))
+                                MgAction::DoneDownload(drivers::Error::IoError(e))
                             } else {
                                 MgAction::DoneDownload(drivers::Error::Success)
                             }
@@ -424,17 +424,17 @@ impl MgApplication {
             .and_then(|w| w.lookup_action("download"))
         {
             if let Ok(sa) = a.downcast::<gio::SimpleAction>() {
-                sa.set_enabled(id != "");
+                sa.set_enabled(!id.is_empty());
             }
         }
     }
 
-    fn set_state(&mut self, state: UIState) {
+    fn set_state(&mut self, state: UiState) {
         match state {
-            UIState::Idle => {
+            UiState::Idle => {
                 self.content_box.set_sensitive(true);
             }
-            UIState::InProgress => {
+            UiState::InProgress => {
                 self.content_box.set_sensitive(false);
             }
         }
@@ -450,7 +450,7 @@ impl MgApplication {
             }
             MgAction::PortChanged(ref id) => self.port_changed(id),
             MgAction::StartErase => {
-                self.set_state(UIState::InProgress);
+                self.set_state(UiState::InProgress);
                 self.do_erase();
             }
             MgAction::DoneErase(e) => {
@@ -458,10 +458,10 @@ impl MgApplication {
                     drivers::Error::Success | drivers::Error::Cancelled => {}
                     _ => self.report_error("Error erasing GPS data.", &e.to_string()),
                 }
-                self.set_state(UIState::Idle);
+                self.set_state(UiState::Idle);
             }
             MgAction::StartDownload => {
-                self.set_state(UIState::InProgress);
+                self.set_state(UiState::InProgress);
                 self.do_download();
             }
             MgAction::DoneDownload(e) => {
@@ -469,7 +469,7 @@ impl MgApplication {
                     drivers::Error::Success | drivers::Error::Cancelled => {}
                     _ => self.report_error("Error downloading GPS data.", &e.to_string()),
                 }
-                self.set_state(UIState::Idle);
+                self.set_state(UiState::Idle);
             }
             MgAction::SetOutputDir(f) => {
                 self.set_output_destination_dir(f.as_ref());

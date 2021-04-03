@@ -45,7 +45,7 @@ pub enum Error {
     Cancelled,
     WrongArg,
     Failed(String),
-    IOError(io::Error),
+    IoError(io::Error),
 }
 
 impl fmt::Display for Error {
@@ -57,7 +57,7 @@ impl fmt::Display for Error {
             Error::Cancelled => write!(f, "Cancelled"),
             Error::WrongArg => write!(f, "WrongArg"),
             Error::Failed(ref s) => write!(f, "{}", s),
-            Error::IOError(ref e) => write!(f, "{}", e),
+            Error::IoError(ref e) => write!(f, "{}", e),
         }
     }
 }
