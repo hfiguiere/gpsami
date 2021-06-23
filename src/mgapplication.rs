@@ -15,7 +15,8 @@ use gtk4 as gtk;
 use gtk4::gio;
 use gtk4::glib;
 use gtk4::prelude::*;
-use gudev::{ClientExt, DeviceExt};
+use gudev::traits::DeviceExt;
+use gudev::traits::*;
 
 use std::cell::RefCell;
 use std::path;
@@ -71,30 +72,29 @@ pub struct MgApplication {
 impl MgApplication {
     pub fn new(gapp: &gtk::Application) -> Rc<RefCell<Self>> {
         let builder = gtk::Builder::from_resource("/net/figuiere/gpsami/mgwindow.ui");
-        let content_box = builder.get_object::<gtk::Box>("content_box").unwrap();
+        let content_box = builder.object::<gtk::Box>("content_box").unwrap();
         let window = gtk::ApplicationWindowBuilder::new()
             .application(gapp)
             .default_height(400)
             .default_width(400)
             .child(&content_box)
             .build();
-        let erase_checkbtn: gtk::CheckButton = builder.get_object("erase_checkbtn").unwrap();
-        let model_combo: gtk::ComboBox = builder.get_object("model_combo").unwrap();
-        let port_combo: gtk::ComboBox = builder.get_object("port_combo").unwrap();
-        let output_dir_chooser: FileChooserButton =
-            builder.get_object("output_dir_chooser").unwrap();
+        let erase_checkbtn: gtk::CheckButton = builder.object("erase_checkbtn").unwrap();
+        let model_combo: gtk::ComboBox = builder.object("model_combo").unwrap();
+        let port_combo: gtk::ComboBox = builder.object("port_combo").unwrap();
+        let output_dir_chooser: FileChooserButton = builder.object("output_dir_chooser").unwrap();
 
         let (sender, receiver) = glib::MainContext::channel::<MgAction>(glib::PRIORITY_DEFAULT);
 
         let sender2 = sender.clone();
         model_combo.connect_changed(move |combo| {
-            if let Some(id) = combo.get_active_id() {
+            if let Some(id) = combo.active_id() {
                 post_event(&sender2, MgAction::ModelChanged(id.to_string()));
             }
         });
         let sender2 = sender.clone();
         port_combo.connect_changed(move |entry| {
-            if let Some(id) = entry.get_active_id() {
+            if let Some(id) = entry.active_id() {
                 post_event(&sender2, MgAction::PortChanged(id.to_string()));
             }
         });
@@ -131,7 +131,7 @@ impl MgApplication {
         device_manager
             .gudev_client
             .connect_uevent(move |_, action, device| {
-                if let Some(subsystem) = device.get_subsystem() {
+                if let Some(subsystem) = device.subsystem() {
                     println!("received event {} {}", action, subsystem);
                 }
                 post_event(&sender2, MgAction::RescanDevices);
@@ -139,7 +139,7 @@ impl MgApplication {
 
         let app = MgApplication {
             gapp: gapp.clone(),
-            window_id: window.get_id(),
+            window_id: window.id(),
             content_box,
             erase_checkbtn,
             model_combo,
@@ -164,7 +164,7 @@ impl MgApplication {
             println!("Error loading settings");
         }
 
-        if let Ok(output_dir) = me.borrow().prefs_store.get_string("output", "dir") {
+        if let Ok(output_dir) = me.borrow().prefs_store.string("output", "dir") {
             output_dir_chooser.set_filename(path::PathBuf::from(output_dir.as_str()));
         }
         me
@@ -182,7 +182,7 @@ impl MgApplication {
         }
         let device = device.unwrap();
 
-        let window = self.gapp.get_window_by_id(self.window_id);
+        let window = self.gapp.window_by_id(self.window_id);
         let chooser = gtk::FileChooserDialog::new(
             Some("Save File"),
             window.as_ref(),
@@ -193,8 +193,8 @@ impl MgApplication {
             ("Save", gtk::ResponseType::Ok),
             ("Cancel", gtk::ResponseType::Cancel),
         ]);
-        if let Ok(output_dir) = self.prefs_store.get_string("output", "dir") {
-            let _ = chooser.set_current_folder(&gio::File::new_for_path(output_dir.as_str()));
+        if let Ok(output_dir) = self.prefs_store.string("output", "dir") {
+            let _ = chooser.set_current_folder(&gio::File::for_path(output_dir.as_str()));
         }
         chooser.show();
 
@@ -205,7 +205,7 @@ impl MgApplication {
                 chooser.close();
                 let output_file: path::PathBuf;
                 if r == gtk::ResponseType::Ok {
-                    let result = chooser.get_current_name();
+                    let result = chooser.current_name();
                     if let Some(f) = result {
                         output_file = path::PathBuf::from(f.as_str());
                     } else {
@@ -256,7 +256,7 @@ impl MgApplication {
     }
 
     fn report_error(&self, message: &str, reason: &str) {
-        let window = self.gapp.get_window_by_id(self.window_id);
+        let window = self.gapp.window_by_id(self.window_id);
         let dialog = gtk::MessageDialog::new(
             window.as_ref(),
             gtk::DialogFlags::MODAL,
@@ -264,7 +264,7 @@ impl MgApplication {
             gtk::ButtonsType::Close,
             message,
         );
-        dialog.set_property_secondary_text(Some(reason));
+        dialog.set_secondary_text(Some(reason));
         dialog.set_modal(true);
         dialog.show();
         dialog.close();
@@ -341,7 +341,7 @@ impl MgApplication {
         utils::setup_text_combo(&self.model_combo, &self.model_store);
         utils::setup_text_combo(&self.port_combo, &self.port_store);
         self.populate_model_combo();
-        if let Some(window) = self.gapp.get_window_by_id(self.window_id) {
+        if let Some(window) = self.gapp.window_by_id(self.window_id) {
             window.present();
         }
     }
@@ -368,11 +368,11 @@ impl MgApplication {
             }
         }
 
-        if let Ok(model) = self.prefs_store.get_string("device", "model") {
+        if let Ok(model) = self.prefs_store.string("device", "model") {
             self.model_combo.set_active_id(Some(model.as_ref()));
         }
 
-        if let Ok(port) = self.prefs_store.get_string("device", "port") {
+        if let Ok(port) = self.prefs_store.string("device", "port") {
             self.port_combo.set_active_id(Some(port.as_ref()));
         }
     }
@@ -399,7 +399,7 @@ impl MgApplication {
         self.erase_checkbtn.set_sensitive(capability.can_erase);
         if let Some(a) = self
             .gapp
-            .get_window_by_id(self.window_id)
+            .window_by_id(self.window_id)
             .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
             .and_then(|w| w.lookup_action("erase"))
         {
@@ -419,7 +419,7 @@ impl MgApplication {
 
         if let Some(a) = self
             .gapp
-            .get_window_by_id(self.window_id)
+            .window_by_id(self.window_id)
             .and_then(|w| w.downcast::<gtk::ApplicationWindow>().ok())
             .and_then(|w| w.lookup_action("download"))
         {

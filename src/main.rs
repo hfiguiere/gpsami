@@ -71,8 +71,7 @@ fn main() {
     let gapp = gtk::Application::new(
         Some("net.figuiere.gpsami"),
         gio::ApplicationFlags::FLAGS_NONE,
-    )
-    .unwrap();
+    );
 
     gapp.connect_activate(move |gapp| {
         let app = MgApplication::new(&gapp);
@@ -88,7 +87,7 @@ fn main() {
         app.borrow_mut().start();
     });
 
-    let ret = gapp.run(&std::env::args().collect::<Vec<_>>());
+    let ret = gapp.run();
     std::process::exit(ret);
 }
 

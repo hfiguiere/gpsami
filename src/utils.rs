@@ -28,5 +28,5 @@ pub fn setup_text_combo(combo: &gtk::ComboBox, model: &gtk::ListStore) {
 
 /// Add a row with two text column into the list store.
 pub fn add_text_row(store: &gtk::ListStore, col1: &str, col2: &str) -> gtk::TreeIter {
-    store.insert_with_values(None, &[0, 1], &[&String::from(col1), &String::from(col2)])
+    store.insert_with_values(None, &[(0, &String::from(col1)), (1, &String::from(col2))])
 }
