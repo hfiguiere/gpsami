@@ -16,7 +16,6 @@ extern crate dirs;
 extern crate gtk_macros;
 extern crate gudev;
 extern crate libudev;
-extern crate rustc_serialize;
 
 use gettextrs::*;
 use gtk4 as gtk;

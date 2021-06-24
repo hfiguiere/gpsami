@@ -15,6 +15,8 @@ use std::fmt;
 use std::io;
 use std::path::PathBuf;
 
+use serde::Deserialize;
+
 use crate::Format;
 
 #[derive(Debug)]
@@ -24,14 +26,14 @@ pub struct Port {
     pub path: PathBuf,
 }
 
-#[derive(Copy, Clone, Debug, RustcDecodable)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 pub enum PortType {
     None,
     UsbSerial,
     RfComm, // Bluetooth Serial
 }
 
-#[derive(Clone, Debug, RustcDecodable)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Desc {
     pub id: String,
     // the port to look for.

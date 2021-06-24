@@ -8,7 +8,8 @@ edition = "2018"
 [dependencies]
 gtk4 = "0.1.0"
 gtk-macros = "0.2.0"
-rustc-serialize = "0.3"
+serde = { version = "1.0.126", features = ["derive"] }
+serde_json = "1.0.64"
 libudev = "0.2.0"
 gudev = "^0.10.0"
 dirs = "^1.0.5"

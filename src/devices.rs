@@ -13,13 +13,13 @@
 
 use std::sync::Arc;
 
-use rustc_serialize::json;
+use serde::Deserialize;
 
 use crate::drivers;
 use crate::gpsbabel;
 
 /// Device static capability
-#[derive(Clone, Debug, RustcDecodable)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Capability {
     pub can_erase: bool,
     pub can_erase_only: bool,
@@ -28,7 +28,7 @@ pub struct Capability {
 }
 
 /// Describe a device
-#[derive(Clone, Debug, RustcDecodable)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Desc {
     pub id: String,
     pub label: String,
@@ -37,7 +37,7 @@ pub struct Desc {
 }
 
 /// The device database.
-#[derive(Clone, Debug, RustcDecodable)]
+#[derive(Clone, Debug, Deserialize)]
 struct DeviceDb {
     devices: Vec<Desc>,
     drivers: Vec<drivers::Desc>,
@@ -57,7 +57,7 @@ pub struct Manager {
 
 impl Manager {
     pub fn new() -> Self {
-        let devices_db: DeviceDb = json::decode(include_str!("devices.json")).unwrap();
+        let devices_db: DeviceDb = serde_json::from_str(include_str!("devices.json")).unwrap();
 
         let client = gudev::Client::new(&["tty"]);
 
@@ -225,6 +225,6 @@ impl Capability {
 #[test]
 fn test_database() {
     // This test that the database has a valid syntax....
-    let devices_db: DeviceDb = json::decode(include_str!("devices.json")).unwrap();
+    let devices_db: DeviceDb = serde_json::from_str(include_str!("devices.json")).unwrap();
     assert!(!devices_db.devices.is_empty());
 }
