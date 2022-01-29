@@ -9,6 +9,8 @@ i18n = import('i18n')
 
 application_id = 'net.figuiere.gpsami'
 
+cargo = find_program('cargo', required: true)
+
 datadir = get_option('prefix') / get_option('datadir')
 iconsdir = datadir / 'icons'
 

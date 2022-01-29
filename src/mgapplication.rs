@@ -73,7 +73,7 @@ impl MgApplication {
     pub fn new(gapp: &gtk::Application) -> Rc<RefCell<Self>> {
         let builder = gtk::Builder::from_resource("/net/figuiere/gpsami/mgwindow.ui");
         let content_box = builder.object::<gtk::Box>("content_box").unwrap();
-        let window = gtk::ApplicationWindowBuilder::new()
+        let window = gtk::builders::ApplicationWindowBuilder::new()
             .application(gapp)
             .default_height(400)
             .default_width(400)
@@ -124,7 +124,7 @@ impl MgApplication {
                 }
                 None
             })
-        ).expect("connect signal failed");
+        );
 
         let device_manager = devices::Manager::new();
         let sender2 = sender.clone();
@@ -205,16 +205,7 @@ impl MgApplication {
                 chooser.close();
                 let output_file: path::PathBuf;
                 if r == gtk::ResponseType::Ok {
-                    let result = chooser.current_name();
-                    if let Some(f) = result {
-                        output_file = path::PathBuf::from(f.as_str());
-                    } else {
-                        post_event(
-                            &sender,
-                            MgAction::DoneDownload(drivers::Error::Cancelled),
-                        );
-                        return;
-                    }
+                    output_file = path::PathBuf::from(chooser.current_name().as_str());
                 } else {
                     post_event(
                         &sender,
