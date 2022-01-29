@@ -1,7 +1,7 @@
 {
     "app-id" : "net.figuiere.gpsami",
     "runtime" : "org.kde.Platform",
-    "runtime-version" : "5.15",
+    "runtime-version" : "5.15-21.08",
     "sdk" : "org.kde.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
