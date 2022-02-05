@@ -501,9 +501,9 @@ dependencies = [
 
 [[package]]
 name = "gudev"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b3503374de1608477d46819daae2a1e894c75c0e3a451f7096e3eafc14689b2"
+checksum = "73703dbc043308bd3b751e68848cc901facfb28b2052e5b6c6484430831614cf"
 dependencies = [
  "glib",
  "gudev-sys",
