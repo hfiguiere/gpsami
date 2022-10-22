@@ -34,7 +34,7 @@ glib::wrapper! {
 
 impl FileChooserButton {
     pub fn new() -> FileChooserButton {
-        glib::Object::new(&[]).expect("Failed to create FileChooserButton")
+        glib::Object::new(&[])
     }
 
     pub fn get_filename(&self) -> Option<PathBuf> {
@@ -61,9 +61,10 @@ pub struct FileChooserButtonPriv {
 }
 
 impl ObjectImpl for FileChooserButtonPriv {
-    fn constructed(&self, obj: &Self::Type) {
-        self.parent_constructed(obj);
+    fn constructed(&self) {
+        self.parent_constructed();
 
+        let obj = self.instance();
         obj.connect_clicked(move |b| {
             let file_chooser = {
                 let mut builder = gtk4::builders::FileChooserNativeBuilder::new()
@@ -77,9 +78,9 @@ impl ObjectImpl for FileChooserButtonPriv {
             let priv_ = FileChooserButtonPriv::from_instance(b);
             // We must hold a reference to the Native dialog, or it crashes.
             priv_.dialog.replace(Some(file_chooser.clone()));
-            if let Some(ref file) = priv_.file.borrow().as_ref().and_then(|f| f.parent()) {
-                print_on_err!(file_chooser.set_current_folder(file));
-            }
+            let file = priv_.file.borrow().as_ref().and_then(|f| f.parent());
+            print_on_err!(file_chooser.set_current_folder(file.as_ref()));
+
             file_chooser.connect_response(glib::clone!(@weak b => move |w, r| {
                 if r == gtk4::ResponseType::Accept {
                     b.set_property("file", &w.file());
@@ -106,26 +107,20 @@ impl ObjectImpl for FileChooserButtonPriv {
         PROPERTIES.as_ref()
     }
 
-    fn set_property(
-        &self,
-        obj: &Self::Type,
-        _id: usize,
-        value: &glib::Value,
-        pspec: &glib::ParamSpec,
-    ) {
+    fn set_property(&self, _id: usize, value: &glib::Value, pspec: &glib::ParamSpec) {
         match pspec.name() {
             "file" => {
                 let file = value.get::<gio::File>().ok();
                 self.file.replace(file.clone());
                 if let Some(name) = file.as_ref().and_then(|f| f.basename()) {
-                    obj.set_label(&name.to_string_lossy());
+                    self.instance().set_label(&name.to_string_lossy());
                 }
             }
             _ => unimplemented!(),
         }
     }
 
-    fn property(&self, _obj: &Self::Type, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
+    fn property(&self, _id: usize, pspec: &glib::ParamSpec) -> glib::Value {
         match pspec.name() {
             "file" => self.file.borrow().to_value(),
             _ => unimplemented!(),
@@ -134,11 +129,8 @@ impl ObjectImpl for FileChooserButtonPriv {
 
     fn signals() -> &'static [Signal] {
         use once_cell::sync::Lazy;
-        static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
-            vec![Signal::builder("file-set", &[], <()>::static_type().into())
-                .run_last()
-                .build()]
-        });
+        static SIGNALS: Lazy<Vec<Signal>> =
+            Lazy::new(|| vec![Signal::builder("file-set").run_last().build()]);
         SIGNALS.as_ref()
     }
 }

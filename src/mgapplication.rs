@@ -194,7 +194,7 @@ impl MgApplication {
             ("Cancel", gtk::ResponseType::Cancel),
         ]);
         if let Ok(output_dir) = self.prefs_store.string("output", "dir") {
-            let _ = chooser.set_current_folder(&gio::File::for_path(output_dir.as_str()));
+            let _ = chooser.set_current_folder(Some(&gio::File::for_path(output_dir.as_str())));
         }
         chooser.show();
 
@@ -205,15 +205,16 @@ impl MgApplication {
                 chooser.close();
                 let output_file: path::PathBuf;
                 if r == gtk::ResponseType::Ok {
-                    output_file = path::PathBuf::from(chooser.current_name().as_str());
-                } else {
-                    post_event(
-                        &sender,
-                        MgAction::DoneDownload(drivers::Error::Cancelled),
-                    );
-                    return;
+                    if let Some(current_name) = chooser.current_name() {
+                        output_file = path::PathBuf::from(current_name.as_str());
+                        Self::really_do_download(sender.clone(), &device, output_file);
+                        return;
+                    }
                 }
-                Self::really_do_download(sender.clone(), &device, output_file);
+                post_event(
+                    &sender,
+                    MgAction::DoneDownload(drivers::Error::Cancelled),
+                );
             }),
         );
     }
