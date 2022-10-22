@@ -1,7 +1,7 @@
 {
     "app-id" : "net.figuiere.gpsami",
     "runtime" : "org.kde.Platform",
-    "runtime-version" : "5.15-21.08",
+    "runtime-version" : "5.15-22.08",
     "sdk" : "org.kde.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
@@ -49,8 +49,8 @@
             "sources": [
                 {
                     "type": "archive",
-                    "url": "https://download.gnome.org/sources/gtk/4.0/gtk-4.0.2.tar.xz",
-                    "sha256": "626707ac6751426ed76fed49c5b2d052dfee45757ce3827088ba87ca7f1dbc84"
+                    "url": "https://download.gnome.org/sources/gtk/4.6/gtk-4.6.7.tar.xz",
+                    "sha256": "effd2e7c4b5e2a5c7fad43e0f24adea68baa4092abb0b752caff278e6bb010e8"
                 }
             ],
             "modules": [
@@ -60,8 +60,8 @@
                     "sources": [
                         {
                             "type": "archive",
-                            "url": "https://download.gnome.org/sources/pango/1.48/pango-1.48.0.tar.xz",
-                            "sha256": "391f26f3341c2d7053e0fb26a956bd42360dadd825efe7088b1e9340a65e74e6"
+                            "url": "https://download.gnome.org/sources/pango/1.50/pango-1.50.11.tar.xz",
+                            "sha256": "8800f812d89ee61388188703203f3a7878963c22f8695aaf1fa0a1a1428d17ae"
                         }
                     ]
                 },
