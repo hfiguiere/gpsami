@@ -11,7 +11,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-extern crate dirs;
+extern crate dirs_next as dirs;
 #[macro_use]
 extern crate gtk_macros;
 extern crate gudev;
