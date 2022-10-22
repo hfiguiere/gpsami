@@ -14,6 +14,8 @@ See `doc/devices.md` for information about device support.
 To build
 --------
 
+### From the command line
+
 You need meson and Rust to build. You also need gtk4 and gudev.
 
 To configure the (release) build do:
@@ -32,6 +34,14 @@ To build
 ````
 $ ninja -C build
 ````
+
+### Using Builder
+
+You can just open Builder and the flatpak manifest will be used to
+build.
+
+Note: since gpsami requires gpsbabel, and gpsbabel needs to be build,
+we use the KDE sdk to satisfy the Qt requirement from gpsbabel.
 
 License
 -------
