@@ -6,6 +6,7 @@ license = "GPL-3"
 edition = "2018"
 
 [dependencies]
+gettext-rs = { version = "0.7.0", features = ["gettext-system"] }
 gtk4 = "^0.5.0"
 gtk-macros = "^0.3.0"
 serde = { version = "1.0.126", features = ["derive"] }
@@ -15,7 +16,6 @@ gudev = { version = "^0.12.0" }
 dirs-next = "^2.0.0"
 once_cell = "1.5"
 
-gettext-rs = { version = "0.4.4", features = ["gettext-system"] }
 
 [[bin]]
 name = "gpsami"

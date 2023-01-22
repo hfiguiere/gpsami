@@ -11,6 +11,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use gettextrs::gettext as i18n;
 use gtk4 as gtk;
 use gtk4::gio;
 use gtk4::glib;
@@ -241,7 +242,7 @@ impl MgApplication {
                         Err(e) => MgAction::DoneDownload(e),
                     }
                 } else {
-                    MgAction::DoneErase(drivers::Error::Failed("open failed".to_string()))
+                    MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
                 },
             );
         });
@@ -283,7 +284,7 @@ impl MgApplication {
                         Err(e) => MgAction::DoneErase(e),
                     }
                 } else {
-                    MgAction::DoneErase(drivers::Error::Failed("open failed".to_string()))
+                    MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
                 },
             );
         });
@@ -448,7 +449,7 @@ impl MgApplication {
             MgAction::DoneErase(e) => {
                 match e {
                     drivers::Error::Success | drivers::Error::Cancelled => {}
-                    _ => self.report_error("Error erasing GPS data.", &e.to_string()),
+                    _ => self.report_error(&i18n("Error erasing GPS data."), &e.to_string()),
                 }
                 self.set_state(UiState::Idle);
             }
@@ -459,7 +460,7 @@ impl MgApplication {
             MgAction::DoneDownload(e) => {
                 match e {
                     drivers::Error::Success | drivers::Error::Cancelled => {}
-                    _ => self.report_error("Error downloading GPS data.", &e.to_string()),
+                    _ => self.report_error(&i18n("Error downloading GPS data."), &e.to_string()),
                 }
                 self.set_state(UiState::Idle);
             }

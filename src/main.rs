@@ -50,15 +50,13 @@ fn init() {
         glib::set_prgname(Some("gpsami"));
 
         // run initialization here
-        if gtk::init().is_err() {
-            panic!("Failed to initialize GTK.");
-        }
+        gtk::init().expect("Failed to initialize GTK.");
 
         file_chooser_button::FileChooserButton::static_type();
 
         setlocale(LocaleCategory::LcAll, "");
-        bindtextdomain("gpsami", config::LOCALEDIR);
-        textdomain("gpsami");
+        bindtextdomain("gpsami", config::LOCALEDIR).expect("Coudln't bind textdomain");
+        textdomain("gpsami").expect("Couldn't find text domain");
 
         static_resources::init().expect("Could not load resources");
     });

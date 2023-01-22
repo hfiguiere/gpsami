@@ -13,6 +13,7 @@
 
 use std::sync::Arc;
 
+use gettextrs::gettext as i18n;
 use serde::Deserialize;
 
 use crate::drivers;
@@ -152,7 +153,7 @@ impl Manager {
                     let id = dev.sysname().to_string_lossy().into_owned();
                     let label = match dev.property_value("ID_MODEL_FROM_DATABASE") {
                         Some(s) => s.to_string_lossy().into_owned(),
-                        None => String::from("(Unknown)"),
+                        None => i18n("(Unknown)"),
                     };
                     drivers::Port { id, label, path }
                 })

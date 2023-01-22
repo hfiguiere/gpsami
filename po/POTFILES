@@ -1,4 +1,6 @@
 data/net.figuiere.gpsami.desktop.in
 data/net.figuiere.gpsami.appdata.xml.in
 data/net.figuiere.gpsami.gschema.xml
-src/window.ui
+src/devices.rs
+src/mgwindow.ui
+src/mgapplication.rs
