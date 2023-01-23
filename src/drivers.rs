@@ -58,8 +58,8 @@ impl fmt::Display for Error {
             Error::NoDriver => write!(f, "No driver"),
             Error::Cancelled => write!(f, "Cancelled"),
             Error::WrongArg => write!(f, "WrongArg"),
-            Error::Failed(ref s) => write!(f, "{}", s),
-            Error::IoError(ref e) => write!(f, "{}", e),
+            Error::Failed(ref s) => write!(f, "{s}"),
+            Error::IoError(ref e) => write!(f, "{e}"),
         }
     }
 }

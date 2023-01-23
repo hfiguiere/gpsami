@@ -49,7 +49,7 @@ pub enum MgAction {
 
 fn post_event(sender: &glib::Sender<MgAction>, action: MgAction) {
     if let Err(err) = sender.send(action) {
-        println!("Sender error: {}", err);
+        println!("Sender error: {err}");
     }
 }
 
@@ -133,7 +133,7 @@ impl MgApplication {
             .gudev_client
             .connect_uevent(move |_, action, device| {
                 if let Some(subsystem) = device.subsystem() {
-                    println!("received event {} {}", action, subsystem);
+                    println!("received event {action} {subsystem}");
                 }
                 post_event(&sender2, MgAction::RescanDevices);
             });
@@ -201,7 +201,7 @@ impl MgApplication {
 
         chooser.connect_response(
             glib::clone!(@strong self.sender as sender, @strong device => move |chooser, r| {
-                println!("Response {}", r);
+                println!("Response {r}");
 
                 chooser.close();
                 let output_file: path::PathBuf;
@@ -313,7 +313,7 @@ impl MgApplication {
         if let Err(e) = std::fs::create_dir_all(path.clone()) {
             return Err(glib::Error::new(
                 glib::FileError::Failed,
-                &format!("Can't create settings dir '{:?}': {}", path, e),
+                &format!("Can't create settings dir '{path:?}': {e}"),
             ));
         }
         path.push("gpsami.ini");
@@ -322,7 +322,7 @@ impl MgApplication {
             .prefs_store
             .load_from_file(path, glib::KeyFileFlags::NONE)
         {
-            println!("error with g_key_file {}", e);
+            println!("error with g_key_file {e}");
             Err(e)
         } else {
             Ok(())
@@ -347,8 +347,8 @@ impl MgApplication {
     fn populate_port_combo(&mut self, ports: &[drivers::Port]) {
         self.port_store.clear();
         for port in ports {
-            println!("adding port {:?}", port);
-            utils::add_text_row(&self.port_store, &port.path.to_str().unwrap(), &port.id);
+            println!("adding port {port:?}");
+            utils::add_text_row(&self.port_store, port.path.to_str().unwrap(), &port.id);
         }
     }
 
@@ -371,8 +371,8 @@ impl MgApplication {
     }
 
     fn model_changed(&mut self, id: &str) {
-        println!("model changed to {}", id);
-        self.prefs_store.set_string("device", "model", &id);
+        println!("model changed to {id}");
+        self.prefs_store.set_string("device", "model", id);
         if self.save_settings().is_err() {
             println!("Error loading settings");
         }

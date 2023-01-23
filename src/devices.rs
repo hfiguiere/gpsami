@@ -84,7 +84,7 @@ impl Manager {
     }
 
     pub fn set_model(&mut self, model: &str) {
-        let port_filter = self.get_port_filter_for_model(&model);
+        let port_filter = self.get_port_filter_for_model(model);
         self.model = Some(model.to_owned());
         self.listen_for_devices(port_filter);
     }
@@ -102,10 +102,10 @@ impl Manager {
             return None;
         }
         // XXX this is suboptimal.
-        match self.devices.iter().find(|&device| device.id == *model) {
-            Some(device) => Some(device.cap.clone()),
-            None => None,
-        }
+        self.devices
+            .iter()
+            .find(|&device| device.id == *model)
+            .map(|device| device.cap.clone())
     }
 
     fn list_ports(&self, port_filters: Vec<drivers::PortType>) -> Vec<drivers::Port> {
@@ -185,9 +185,8 @@ impl Manager {
 
     // Get a driver for the device from the current manager.
     pub fn get_device(&self) -> Option<Arc<dyn drivers::Driver + Send + Sync>> {
-        if self.model == None {
-            return None;
-        }
+        self.model.as_ref()?;
+
         let capability: Capability;
         let driver_id = match self.devices.iter().find(|&device| {
             if let Some(ref model) = self.model {

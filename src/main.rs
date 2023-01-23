@@ -71,7 +71,7 @@ fn main() {
     );
 
     gapp.connect_activate(move |gapp| {
-        let app = MgApplication::new(&gapp);
+        let app = MgApplication::new(gapp);
 
         action!(
             gapp,
