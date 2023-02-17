@@ -85,7 +85,7 @@ fn main() {
     });
 
     let ret = gapp.run();
-    std::process::exit(ret);
+    std::process::exit(ret.into());
 }
 
 #[test]

@@ -74,7 +74,7 @@ impl MgApplication {
     pub fn new(gapp: &gtk::Application) -> Rc<RefCell<Self>> {
         let builder = gtk::Builder::from_resource("/net/figuiere/gpsami/mgwindow.ui");
         let content_box = builder.object::<gtk::Box>("content_box").unwrap();
-        let window = gtk::builders::ApplicationWindowBuilder::new()
+        let window = gtk::ApplicationWindow::builder()
             .application(gapp)
             .default_height(400)
             .default_width(400)
