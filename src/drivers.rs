@@ -50,6 +50,12 @@ pub enum Error {
     IoError(io::Error),
 }
 
+impl From<io::Error> for Error {
+    fn from(e: io::Error) -> Self {
+        Self::IoError(e)
+    }
+}
+
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {

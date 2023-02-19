@@ -126,8 +126,7 @@ impl Driver for GpsBabel {
             .arg(fmt_string) // format
             .arg("-F")
             .arg(String::from(dir.to_str().unwrap()))
-            .output()
-            .expect("failed to execute process");
+            .output()?;
         println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
         if !output.status.success() {
             let err_output = String::from_utf8_lossy(&output.stderr);
@@ -145,8 +144,7 @@ impl Driver for GpsBabel {
         }
         /* gpsbabel -t -w -i m241,erase_only -f /dev/ttyACM0 */
         let output = GpsBabel::build_basic_command_line(&self.device_id, &self.port, false, true)
-            .output()
-            .expect("failed to execute process");
+            .output()?;
         println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
         if !output.status.success() {
             let err_output = String::from_utf8_lossy(&output.stderr);
