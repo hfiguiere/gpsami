@@ -86,11 +86,11 @@ impl GpsBabel {
 }
 
 impl Driver for GpsBabel {
-    fn open(&mut self) -> bool {
+    fn open(&self) -> bool {
         !self.port.is_empty()
     }
 
-    fn close(&mut self) -> bool {
+    fn close(&self) -> bool {
         true
     }
 
@@ -129,8 +129,9 @@ impl Driver for GpsBabel {
             .output()
             .expect("failed to execute process");
         println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-        let err_output = String::from_utf8_lossy(&output.stderr);
         if !output.status.success() {
+            let err_output = String::from_utf8_lossy(&output.stderr);
+            println!("{}: {}", output.status, err_output);
             return Err(Error::Failed(err_output.into_owned()));
         }
         Ok(dir)
@@ -147,8 +148,9 @@ impl Driver for GpsBabel {
             .output()
             .expect("failed to execute process");
         println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
-        let err_output = String::from_utf8_lossy(&output.stderr);
         if !output.status.success() {
+            let err_output = String::from_utf8_lossy(&output.stderr);
+            println!("{}: {}", output.status, err_output);
             return Err(Error::Failed(err_output.into_owned()));
         }
         Ok(())

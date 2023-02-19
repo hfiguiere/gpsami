@@ -12,21 +12,6 @@ use gtk4::glib::subclass::Signal;
 use gtk4::prelude::*;
 use gtk4::subclass::prelude::*;
 
-/// Print a message on error returned.
-macro_rules! print_on_err {
-    ($e:expr) => {
-        if let Err(err) = $e {
-            eprintln!(
-                "{}:{} Error '{}': {}",
-                file!(),
-                line!(),
-                stringify!($e),
-                err
-            );
-        }
-    };
-}
-
 glib::wrapper! {
     pub struct FileChooserButton(
         ObjectSubclass<FileChooserButtonPriv>)

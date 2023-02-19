@@ -208,7 +208,7 @@ impl MgApplication {
                 if r == gtk::ResponseType::Ok {
                     if let Some(current_name) = chooser.current_name() {
                         output_file = path::PathBuf::from(current_name.as_str());
-                        Self::really_do_download(sender.clone(), &device, output_file);
+                        Self::really_do_download(sender.clone(), device.clone(), output_file);
                         return;
                     }
                 }
@@ -222,30 +222,31 @@ impl MgApplication {
 
     fn really_do_download(
         sender: glib::Sender<MgAction>,
-        device: &Arc<dyn drivers::Driver + Send + Sync>,
+        device: Arc<dyn drivers::Driver + Send + Sync>,
         output_file: path::PathBuf,
     ) {
-        let mut d = device.clone();
-        thread::spawn(move || {
-            post_event(
-                &sender,
-                if Arc::get_mut(&mut d).unwrap().open() {
-                    match d.download(Format::Gpx, false) {
-                        Ok(temp_output_filename) => {
-                            println!("success {}", temp_output_filename.to_str().unwrap());
-                            if let Err(e) = std::fs::copy(temp_output_filename, output_file) {
-                                MgAction::DoneDownload(drivers::Error::IoError(e))
-                            } else {
-                                MgAction::DoneDownload(drivers::Error::Success)
+        print_on_err!(thread::Builder::new()
+            .name("downloader".into())
+            .spawn(move || {
+                post_event(
+                    &sender,
+                    if device.open() {
+                        match device.download(Format::Gpx, false) {
+                            Ok(temp_output_filename) => {
+                                println!("success {}", temp_output_filename.to_str().unwrap());
+                                if let Err(e) = std::fs::copy(temp_output_filename, output_file) {
+                                    MgAction::DoneDownload(drivers::Error::IoError(e))
+                                } else {
+                                    MgAction::DoneDownload(drivers::Error::Success)
+                                }
                             }
+                            Err(e) => MgAction::DoneDownload(e),
                         }
-                        Err(e) => MgAction::DoneDownload(e),
-                    }
-                } else {
-                    MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
-                },
-            );
-        });
+                    } else {
+                        MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
+                    },
+                );
+            }));
     }
 
     fn report_error(&self, message: &str, reason: &str) {
@@ -270,12 +271,12 @@ impl MgApplication {
             post_event(&self.sender, MgAction::DoneErase(drivers::Error::NoDriver));
             return;
         }
-        let mut d = device.unwrap();
+        let d = device.unwrap();
         let sender = self.sender.clone();
-        thread::spawn(move || {
+        print_on_err!(thread::Builder::new().name("eraser".into()).spawn(move || {
             post_event(
                 &sender,
-                if Arc::get_mut(&mut d).unwrap().open() {
+                if d.open() {
                     match d.erase() {
                         Ok(_) => {
                             println!("success erasing");
@@ -287,7 +288,7 @@ impl MgApplication {
                     MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
                 },
             );
-        });
+        }));
     }
 
     fn settings_dir() -> path::PathBuf {

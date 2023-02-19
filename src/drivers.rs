@@ -66,9 +66,9 @@ impl fmt::Display for Error {
 
 pub trait Driver {
     /// open the device
-    fn open(&mut self) -> bool;
+    fn open(&self) -> bool;
     /// close the device
-    fn close(&mut self) -> bool;
+    fn close(&self) -> bool;
     /// Download the track in specified format
     /// Return the PathBuf pointing to the datafile.
     fn download(&self, format: Format, erase: bool) -> Result<PathBuf, Error>;

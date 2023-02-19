@@ -14,6 +14,22 @@
 use gtk4 as gtk;
 use gtk4::prelude::*;
 
+/// Print a message on error returned.
+#[macro_export]
+macro_rules! print_on_err {
+    ($e:expr) => {
+        if let Err(err) = $e {
+            log::error!(
+                "{}:{} Error '{}': {}",
+                file!(),
+                line!(),
+                stringify!($e),
+                err
+            );
+        }
+    };
+}
+
 /// Setup a gtk::ComboBox model to have id in column 1 and label in column 2
 /// All text.
 pub fn setup_text_combo(combo: &gtk::ComboBox, model: &gtk::ListStore) {

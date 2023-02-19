@@ -23,6 +23,9 @@ use gtk4::gio;
 use gtk4::gio::prelude::*;
 use gtk4::glib;
 
+#[macro_use]
+mod utils;
+
 use mgapplication::MgApplication;
 
 mod config;
@@ -32,7 +35,6 @@ mod file_chooser_button;
 mod gpsbabel;
 mod mgapplication;
 mod static_resources;
-mod utils;
 
 pub enum Format {
     None,
