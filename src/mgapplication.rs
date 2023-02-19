@@ -204,10 +204,8 @@ impl MgApplication {
                 println!("Response {r}");
 
                 chooser.close();
-                let output_file: path::PathBuf;
                 if r == gtk::ResponseType::Ok {
-                    if let Some(current_name) = chooser.current_name() {
-                        output_file = path::PathBuf::from(current_name.as_str());
+                    if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
                         Self::really_do_download(sender.clone(), device.clone(), output_file);
                         return;
                     }
@@ -233,7 +231,10 @@ impl MgApplication {
                     if device.open() {
                         match device.download(Format::Gpx, false) {
                             Ok(temp_output_filename) => {
-                                println!("success {}", temp_output_filename.to_str().unwrap());
+                                println!(
+                                    "success {:?} -> will copy to {:?}",
+                                    temp_output_filename, output_file
+                                );
                                 if let Err(e) = std::fs::copy(temp_output_filename, output_file) {
                                     MgAction::DoneDownload(drivers::Error::IoError(e))
                                 } else {

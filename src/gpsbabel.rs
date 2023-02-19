@@ -117,15 +117,15 @@ impl Driver for GpsBabel {
         let extension = extension_opt.unwrap();
 
         // XXX use a better temporary name
-        let mut dir = env::temp_dir();
-        dir.push(String::from("gpsami") + extension);
+        let mut outfile = env::temp_dir();
+        outfile.push(String::from("gpsami") + extension);
 
         /* gpsbabel -t -w -i m241 -f /dev/ttyACM0 -o gpx -F $1 */
         let output = GpsBabel::build_basic_command_line(&self.device_id, &self.port, erase, false)
             .arg("-o")
             .arg(fmt_string) // format
             .arg("-F")
-            .arg(String::from(dir.to_str().unwrap()))
+            .arg(String::from(outfile.to_str().unwrap()))
             .output()?;
         println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
         if !output.status.success() {
@@ -133,7 +133,7 @@ impl Driver for GpsBabel {
             println!("{}: {}", output.status, err_output);
             return Err(Error::Failed(err_output.into_owned()));
         }
-        Ok(dir)
+        Ok(outfile)
     }
 
     /// Erase the logs on the device. Return an error if not capable.
