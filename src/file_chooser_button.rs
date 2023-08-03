@@ -3,7 +3,6 @@
 //
 
 use std::cell::RefCell;
-use std::convert::TryFrom;
 use std::path::{Path, PathBuf};
 
 use gtk4::gio;

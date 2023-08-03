@@ -85,7 +85,7 @@ impl MgApplication {
         let port_combo: gtk::ComboBox = builder.object("port_combo").unwrap();
         let output_dir_chooser: FileChooserButton = builder.object("output_dir_chooser").unwrap();
 
-        let (sender, receiver) = glib::MainContext::channel::<MgAction>(glib::PRIORITY_DEFAULT);
+        let (sender, receiver) = glib::MainContext::channel::<MgAction>(glib::Priority::DEFAULT);
 
         let sender2 = sender.clone();
         model_combo.connect_changed(move |combo| {
@@ -158,7 +158,7 @@ impl MgApplication {
         let metoo = me.clone();
         receiver.attach(None, move |e| {
             metoo.borrow_mut().process_event(e);
-            glib::Continue(true)
+            glib::ControlFlow::Continue
         });
 
         if me.borrow_mut().load_settings().is_err() {
