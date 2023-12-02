@@ -49,12 +49,12 @@ pub enum MgAction {
 
 fn post_event(sender: &glib::Sender<MgAction>, action: MgAction) {
     if let Err(err) = sender.send(action) {
-        println!("Sender error: {err}");
+        log::error!("Sender error: {err}");
     }
 }
 
 pub struct MgApplication {
-    gapp: gtk::Application,
+    gapp: adw::Application,
     window_id: u32,
     content_box: gtk::Box,
     erase_checkbtn: gtk::CheckButton,
@@ -71,7 +71,7 @@ pub struct MgApplication {
 }
 
 impl MgApplication {
-    pub fn new(gapp: &gtk::Application) -> Rc<RefCell<Self>> {
+    pub fn new(gapp: &adw::Application) -> Rc<RefCell<Self>> {
         let builder = gtk::Builder::from_resource("/net/figuiere/gpsami/mgwindow.ui");
         let content_box = builder.object::<gtk::Box>("content_box").unwrap();
         let window = gtk::ApplicationWindow::builder()
@@ -133,7 +133,7 @@ impl MgApplication {
             .gudev_client
             .connect_uevent(move |_, action, device| {
                 if let Some(subsystem) = device.subsystem() {
-                    println!("received event {action} {subsystem}");
+                    log::debug!("received event {action} {subsystem}");
                 }
                 post_event(&sender2, MgAction::RescanDevices);
             });
@@ -162,7 +162,7 @@ impl MgApplication {
         });
 
         if me.borrow_mut().load_settings().is_err() {
-            println!("Error loading settings");
+            log::error!("Error loading settings");
         }
 
         if let Ok(output_dir) = me.borrow().prefs_store.string("output", "dir") {
@@ -174,7 +174,7 @@ impl MgApplication {
     fn do_download(&mut self) {
         let device = self.device_manager.get_device();
         if device.is_none() {
-            println!("nodriver");
+            log::debug!("nodriver");
             post_event(
                 &self.sender,
                 MgAction::DoneDownload(drivers::Error::NoDriver),
@@ -201,7 +201,7 @@ impl MgApplication {
 
         chooser.connect_response(
             glib::clone!(@strong self.sender as sender, @strong device => move |chooser, r| {
-                println!("Response {r}");
+                log::debug!("Response {r}");
 
                 chooser.close();
                 if r == gtk::ResponseType::Ok {
@@ -231,9 +231,8 @@ impl MgApplication {
                     if device.open() {
                         match device.download(Format::Gpx, false) {
                             Ok(temp_output_filename) => {
-                                println!(
-                                    "success {:?} -> will copy to {:?}",
-                                    temp_output_filename, output_file
+                                log::debug!(
+                                    "success {temp_output_filename:?} -> will copy to {output_file:?}"
                                 );
                                 if let Err(e) = std::fs::copy(temp_output_filename, output_file) {
                                     MgAction::DoneDownload(drivers::Error::IoError(e))
@@ -268,7 +267,7 @@ impl MgApplication {
     fn do_erase(&self) {
         let device = self.device_manager.get_device();
         if device.is_none() {
-            println!("nodriver");
+            log::error!("nodriver");
             post_event(&self.sender, MgAction::DoneErase(drivers::Error::NoDriver));
             return;
         }
@@ -280,7 +279,7 @@ impl MgApplication {
                 if d.open() {
                     match d.erase() {
                         Ok(_) => {
-                            println!("success erasing");
+                            log::debug!("success erasing");
                             MgAction::DoneErase(drivers::Error::Success)
                         }
                         Err(e) => MgAction::DoneErase(e),
@@ -324,7 +323,7 @@ impl MgApplication {
             .prefs_store
             .load_from_file(path, glib::KeyFileFlags::NONE)
         {
-            println!("error with g_key_file {e}");
+            log::error!("error with g_key_file {e}");
             Err(e)
         } else {
             Ok(())
@@ -349,7 +348,7 @@ impl MgApplication {
     fn populate_port_combo(&mut self, ports: &[drivers::Port]) {
         self.port_store.clear();
         for port in ports {
-            println!("adding port {port:?}");
+            log::debug!("adding port {port:?}");
             utils::add_text_row(&self.port_store, port.path.to_str().unwrap(), &port.id);
         }
     }
@@ -373,10 +372,10 @@ impl MgApplication {
     }
 
     fn model_changed(&mut self, id: &str) {
-        println!("model changed to {id}");
+        log::debug!("model changed to {id}");
         self.prefs_store.set_string("device", "model", id);
         if self.save_settings().is_err() {
-            println!("Error loading settings");
+            log::error!("Error loading settings");
         }
 
         let cap = self.device_manager.device_capability(id);
@@ -407,7 +406,7 @@ impl MgApplication {
     fn port_changed(&mut self, id: &str) {
         self.prefs_store.set_string("device", "port", id);
         if self.save_settings().is_err() {
-            println!("Error loading settings");
+            log::error!("Error saving settings");
         }
 
         self.device_manager.set_port(id);
@@ -471,7 +470,7 @@ impl MgApplication {
                 self.prefs_store
                     .set_string("output", "dir", f.to_str().unwrap());
                 if self.save_settings().is_err() {
-                    println!("Error loading settings");
+                    log::error!("Error saving settings");
                 }
             }
         }

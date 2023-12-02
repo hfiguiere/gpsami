@@ -116,9 +116,8 @@ impl Driver for GpsBabel {
         }
         let extension = extension_opt.unwrap();
 
-        // XXX use a better temporary name
-        let mut outfile = env::temp_dir();
-        outfile.push(String::from("gpsami") + extension);
+        let tempdir = tempfile::tempdir()?;
+        let mut outfile = tempdir.path().join(String::from("gpsami") + extension);
 
         /* gpsbabel -t -w -i m241 -f /dev/ttyACM0 -o gpx -F $1 */
         let output = GpsBabel::build_basic_command_line(&self.device_id, &self.port, erase, false)
@@ -127,10 +126,10 @@ impl Driver for GpsBabel {
             .arg("-F")
             .arg(String::from(outfile.to_str().unwrap()))
             .output()?;
-        println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+        log::debug!("stdout: {}", String::from_utf8_lossy(&output.stdout));
         if !output.status.success() {
             let err_output = String::from_utf8_lossy(&output.stderr);
-            println!("{}: {}", output.status, err_output);
+            log::error!("{}: {}", output.status, err_output);
             return Err(Error::Failed(err_output.into_owned()));
         }
         Ok(outfile)
@@ -145,10 +144,10 @@ impl Driver for GpsBabel {
         /* gpsbabel -t -w -i m241,erase_only -f /dev/ttyACM0 */
         let output = GpsBabel::build_basic_command_line(&self.device_id, &self.port, false, true)
             .output()?;
-        println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+        log::debug!("stdout: {}", String::from_utf8_lossy(&output.stdout));
         if !output.status.success() {
             let err_output = String::from_utf8_lossy(&output.stderr);
-            println!("{}: {}", output.status, err_output);
+            log::error!("{}: {}", output.status, err_output);
             return Err(Error::Failed(err_output.into_owned()));
         }
         Ok(())

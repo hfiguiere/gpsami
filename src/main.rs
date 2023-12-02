@@ -17,6 +17,7 @@ extern crate gtk_macros;
 extern crate gudev;
 extern crate libudev;
 
+use adw::prelude::*;
 use gettextrs::*;
 use gtk4 as gtk;
 use gtk4::gio;
@@ -49,6 +50,8 @@ fn init() {
     static START: Once = Once::new();
 
     START.call_once(|| {
+        env_logger::init();
+
         glib::set_prgname(Some("gpsami"));
 
         // run initialization here
@@ -67,7 +70,7 @@ fn init() {
 fn main() {
     init();
 
-    let gapp = gtk::Application::new(
+    let gapp = adw::Application::new(
         Some("net.figuiere.gpsami"),
         gio::ApplicationFlags::FLAGS_NONE,
     );
