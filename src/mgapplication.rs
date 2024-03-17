@@ -20,8 +20,8 @@ use gtk4 as gtk;
 use gtk4::gio;
 use gtk4::glib;
 use gtk4::prelude::*;
-use gudev::traits::DeviceExt;
-use gudev::traits::*;
+use gudev::prelude::DeviceExt;
+use gudev::prelude::*;
 
 use std::cell::RefCell;
 use std::path;
