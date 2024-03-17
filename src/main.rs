@@ -21,7 +21,6 @@ use adw::prelude::*;
 use gettextrs::*;
 use gtk4 as gtk;
 use gtk4::gio;
-use gtk4::gio::prelude::*;
 use gtk4::glib;
 
 #[macro_use]

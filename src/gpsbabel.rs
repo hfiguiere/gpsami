@@ -11,7 +11,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
@@ -117,7 +116,7 @@ impl Driver for GpsBabel {
         let extension = extension_opt.unwrap();
 
         let tempdir = tempfile::tempdir()?;
-        let mut outfile = tempdir.path().join(String::from("gpsami") + extension);
+        let outfile = tempdir.path().join(String::from("gpsami") + extension);
 
         /* gpsbabel -t -w -i m241 -f /dev/ttyACM0 -o gpx -F $1 */
         let output = GpsBabel::build_basic_command_line(&self.device_id, &self.port, erase, false)
