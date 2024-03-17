@@ -45,9 +45,9 @@ pub enum MgAction {
     ModelChanged(String),
     PortChanged(String),
     StartErase,
-    DoneErase(drivers::Error),
+    DoneErase(drivers::Result<()>),
     StartDownload,
-    DoneDownload(drivers::Error),
+    DoneDownload(drivers::Result<()>),
     SetOutputDir(path::PathBuf),
 }
 
@@ -190,7 +190,7 @@ impl MgApplication {
             log::debug!("nodriver");
             post_event(
                 &self.sender,
-                MgAction::DoneDownload(drivers::Error::NoDriver),
+                MgAction::DoneDownload(Err(drivers::Error::NoDriver)),
             );
             return;
         }
@@ -225,7 +225,7 @@ impl MgApplication {
                 }
                 post_event(
                     &sender,
-                    MgAction::DoneDownload(drivers::Error::Cancelled),
+                    MgAction::DoneDownload(Err(drivers::Error::Cancelled)),
                 );
             }),
         );
@@ -242,21 +242,17 @@ impl MgApplication {
                 post_event(
                     &sender,
                     if device.open() {
-                        match device.download(Format::Gpx, false) {
-                            Ok(temp_output_filename) => {
-                                log::debug!(
-                                    "success {temp_output_filename:?} -> will copy to {output_file:?}"
-                                );
-                                if let Err(e) = std::fs::copy(temp_output_filename, output_file) {
-                                    MgAction::DoneDownload(drivers::Error::IoError(e))
-                                } else {
-                                    MgAction::DoneDownload(drivers::Error::Success)
-                                }
-                            }
-                            Err(e) => MgAction::DoneDownload(e),
-                        }
+                        MgAction::DoneDownload(
+                            device.download(Format::Gpx, false)
+                                .and_then(|temp_output_filename| {
+                                    log::debug!(
+                                        "success {temp_output_filename:?} -> will copy to {output_file:?}"
+                                            );
+                                    std::fs::copy(temp_output_filename, output_file).map(|_| ()).map_err(drivers::Error::from)
+                                })
+                            )
                     } else {
-                        MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
+                        MgAction::DoneErase(Err(drivers::Error::Failed(i18n("Open failed."))))
                     },
                 );
             }));
@@ -281,7 +277,10 @@ impl MgApplication {
         let device = self.device_manager.get_device();
         if device.is_none() {
             log::error!("nodriver");
-            post_event(&self.sender, MgAction::DoneErase(drivers::Error::NoDriver));
+            post_event(
+                &self.sender,
+                MgAction::DoneErase(Err(drivers::Error::NoDriver)),
+            );
             return;
         }
         let d = device.unwrap();
@@ -293,12 +292,12 @@ impl MgApplication {
                     match d.erase() {
                         Ok(_) => {
                             log::debug!("success erasing");
-                            MgAction::DoneErase(drivers::Error::Success)
+                            MgAction::DoneErase(Ok(()))
                         }
-                        Err(e) => MgAction::DoneErase(e),
+                        Err(e) => MgAction::DoneErase(Err(e)),
                     }
                 } else {
-                    MgAction::DoneErase(drivers::Error::Failed(i18n("Open failed.")))
+                    MgAction::DoneErase(Err(drivers::Error::Failed(i18n("Open failed."))))
                 },
             );
         }));
@@ -462,8 +461,8 @@ impl MgApplication {
             }
             MgAction::DoneErase(e) => {
                 match e {
-                    drivers::Error::Success | drivers::Error::Cancelled => {}
-                    _ => self.report_error(&i18n("Error erasing GPS data."), &e.to_string()),
+                    Ok(_) | Err(drivers::Error::Cancelled) => {}
+                    Err(e) => self.report_error(&i18n("Error erasing GPS data."), &e.to_string()),
                 }
                 self.set_state(UiState::Idle);
             }
@@ -473,8 +472,10 @@ impl MgApplication {
             }
             MgAction::DoneDownload(e) => {
                 match e {
-                    drivers::Error::Success | drivers::Error::Cancelled => {}
-                    _ => self.report_error(&i18n("Error downloading GPS data."), &e.to_string()),
+                    Ok(_) | Err(drivers::Error::Cancelled) => {}
+                    Err(e) => {
+                        self.report_error(&i18n("Error downloading GPS data."), &e.to_string())
+                    }
                 }
                 self.set_state(UiState::Idle);
             }

@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2016-2024 Hubert Figuière
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -11,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::fmt;
 use std::io;
 use std::path::PathBuf;
 
 use serde::Deserialize;
+use thiserror::Error;
 
 use crate::Format;
 
@@ -40,35 +43,23 @@ pub struct Desc {
     pub ports: Vec<PortType>,
 }
 
+#[derive(Error, Debug)]
 pub enum Error {
-    Success,
+    #[error("Unsupported")]
     Unsupported,
+    #[error("No driver")]
     NoDriver,
+    #[error("Cancelled")]
     Cancelled,
+    #[error("Incorrect argument")]
     WrongArg,
+    #[error("Failed: {0}")]
     Failed(String),
-    IoError(io::Error),
+    #[error("IO error {0}")]
+    Io(#[from] io::Error),
 }
 
-impl From<io::Error> for Error {
-    fn from(e: io::Error) -> Self {
-        Self::IoError(e)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Error::Success => write!(f, "Success"),
-            Error::Unsupported => write!(f, "Unsupported"),
-            Error::NoDriver => write!(f, "No driver"),
-            Error::Cancelled => write!(f, "Cancelled"),
-            Error::WrongArg => write!(f, "WrongArg"),
-            Error::Failed(ref s) => write!(f, "{s}"),
-            Error::IoError(ref e) => write!(f, "{e}"),
-        }
-    }
-}
+pub type Result<T> = std::result::Result<T, Error>;
 
 pub trait Driver {
     /// open the device
@@ -77,7 +68,7 @@ pub trait Driver {
     fn close(&self) -> bool;
     /// Download the track in specified format
     /// Return the PathBuf pointing to the datafile.
-    fn download(&self, format: Format, erase: bool) -> Result<PathBuf, Error>;
+    fn download(&self, format: Format, erase: bool) -> Result<PathBuf>;
     /// Erase the tracks
-    fn erase(&self) -> Result<(), Error>;
+    fn erase(&self) -> Result<()>;
 }
