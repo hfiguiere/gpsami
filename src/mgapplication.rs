@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2016-2024 Hubert Figuière
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -11,6 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+use async_channel::Sender;
 use gettextrs::gettext as i18n;
 use gtk4 as gtk;
 use gtk4::gio;
@@ -47,10 +51,13 @@ pub enum MgAction {
     SetOutputDir(path::PathBuf),
 }
 
-fn post_event(sender: &glib::Sender<MgAction>, action: MgAction) {
-    if let Err(err) = sender.send(action) {
-        log::error!("Sender error: {err}");
-    }
+fn post_event(sender: &Sender<MgAction>, action: MgAction) {
+    let sender = sender.clone();
+    glib::MainContext::default().spawn(async move {
+        if let Err(err) = sender.send(action).await {
+            log::error!("Sender error: {err}");
+        }
+    });
 }
 
 pub struct MgApplication {
@@ -67,7 +74,7 @@ pub struct MgApplication {
     prefs_store: glib::KeyFile,
 
     output_dest_dir: path::PathBuf,
-    sender: glib::Sender<MgAction>,
+    sender: Sender<MgAction>,
 }
 
 impl MgApplication {
@@ -85,7 +92,7 @@ impl MgApplication {
         let port_combo: gtk::ComboBox = builder.object("port_combo").unwrap();
         let output_dir_chooser: FileChooserButton = builder.object("output_dir_chooser").unwrap();
 
-        let (sender, receiver) = glib::MainContext::channel::<MgAction>(glib::Priority::DEFAULT);
+        let (sender, receiver) = async_channel::unbounded::<MgAction>();
 
         let sender2 = sender.clone();
         model_combo.connect_changed(move |combo| {
@@ -156,10 +163,16 @@ impl MgApplication {
         let me = Rc::new(RefCell::new(app));
 
         let metoo = me.clone();
-        receiver.attach(None, move |e| {
-            metoo.borrow_mut().process_event(e);
-            glib::ControlFlow::Continue
-        });
+
+        glib::spawn_future_local(
+            glib::clone!(@strong receiver as rx, @strong metoo => async move {
+                log::debug!("attaching for {}", std::any::type_name::<MgAction>());
+                while let Ok(message) = rx.recv().await {
+                    metoo.borrow_mut().process_event(message);
+                }
+                log::debug!("terminating {}", std::any::type_name::<MgAction>());
+            }),
+        );
 
         if me.borrow_mut().load_settings().is_err() {
             log::error!("Error loading settings");
@@ -219,7 +232,7 @@ impl MgApplication {
     }
 
     fn really_do_download(
-        sender: glib::Sender<MgAction>,
+        sender: Sender<MgAction>,
         device: Arc<dyn drivers::Driver + Send + Sync>,
         output_file: path::PathBuf,
     ) {

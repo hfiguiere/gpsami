@@ -7,6 +7,7 @@ edition = "2018"
 
 [dependencies]
 adw = { version = "^0.5", features = ["v1_2"], package = "libadwaita" }
+async-channel = "2.2.0"
 dirs-next = "^2.0.0"
 env_logger = "0.10.0"
 gettext-rs = { version = "0.7.0", features = ["gettext-system"] }
