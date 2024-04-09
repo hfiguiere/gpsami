@@ -1,6 +1,18 @@
 //
-// (c) 2021-2023 Hubert Figuière
+// (c) 2021-2024 Hubert Figuière
 //
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 use std::cell::RefCell;
 use std::path::{Path, PathBuf};
@@ -22,7 +34,7 @@ impl FileChooserButton {
         glib::Object::new()
     }
 
-    pub fn get_filename(&self) -> Option<PathBuf> {
+    pub fn filename(&self) -> Option<PathBuf> {
         self.imp().file.borrow().as_ref().and_then(|f| f.path())
     }
 
@@ -50,11 +62,18 @@ impl ObjectImpl for FileChooserButtonPriv {
     fn constructed(&self) {
         self.parent_constructed();
 
+        let button = adw::ButtonContent::new();
+        button.set_icon_name("document-open-symbolic");
+        self.obj().set_child(Some(&button));
+        self.obj()
+            .bind_property("file", &button, "label")
+            .transform_to(|_, value: gio::File| value.path())
+            .build();
         self.obj().connect_clicked(move |b| {
             let file_chooser = {
                 let mut builder = gtk4::FileChooserNative::builder()
                     .modal(true)
-                    .action(gtk4::FileChooserAction::Open);
+                    .action(gtk4::FileChooserAction::SelectFolder);
                 if let Some(ref window) = b.root().and_then(|r| r.downcast::<gtk4::Window>().ok()) {
                     builder = builder.transient_for(window);
                 }

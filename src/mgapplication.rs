@@ -126,7 +126,7 @@ impl MgApplication {
             "file-set",
             true,
             glib::clone!(@weak output_dir_chooser, @strong sender => @default-return None, move |_| {
-                let file_name = output_dir_chooser.get_filename();
+                let file_name = output_dir_chooser.filename();
                 if let Some(f) = file_name {
                     post_event(&sender, MgAction::SetOutputDir(f));
                 }
