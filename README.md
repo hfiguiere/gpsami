@@ -4,12 +4,13 @@ gpsami
 gpsami is a small GUI application to download data from a GPS loggers
 and save it as GPX.
 
-It is written in Rust and uses Gtk3 for the UI and gpsbabel for the download part.
+It is written in Rust and uses Gtk4 for the UI and gpsbabel for the
+download part.
 
 Requires libudev for listing devices, therefor require some effort to
 run on non-Linux. Patches welcome.
 
-See `doc/devices.md` for information about device support.
+See [`doc/devices.md`](doc/devices.md) for information about device support.
 
 To build
 --------
