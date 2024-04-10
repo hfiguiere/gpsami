@@ -255,15 +255,20 @@ impl MgApplication {
                 post_event(
                     &sender,
                     if device.open() {
-                        MgAction::DoneDownload(
-                            device.download(Format::Gpx, false)
-                                .and_then(|temp_output_filename| {
-                                    log::debug!(
-                                        "success {temp_output_filename:?} -> will copy to {output_file:?}"
+                        let tempdir = tempfile::tempdir();
+                        if let Ok(tempdir) = tempdir {
+                            MgAction::DoneDownload(
+                                device.download(Format::Gpx, false, &tempdir)
+                                    .and_then(|temp_output_filename| {
+                                        log::debug!(
+                                            "success {temp_output_filename:?} -> will copy to {output_file:?}"
                                             );
-                                    std::fs::copy(temp_output_filename, output_file).map(|_| ()).map_err(drivers::Error::from)
-                                })
-                            )
+                                        std::fs::copy(temp_output_filename, output_file).map(|_| ()).map_err(drivers::Error::from)
+                                    })
+                                    )
+                        } else {
+                            MgAction::DoneErase(tempdir.map(|_| ()).map_err(drivers::Error::from))
+                        }
                     } else {
                         MgAction::DoneErase(Err(drivers::Error::Failed(i18n("Open failed."))))
                     },

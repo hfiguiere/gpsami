@@ -1,3 +1,6 @@
+//
+// (c) 2016-2024 Hubert Figuière
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -13,6 +16,8 @@
 
 use std::path::PathBuf;
 use std::process::Command;
+
+use tempfile::TempDir;
 
 use crate::devices::Capability;
 use crate::drivers::Driver;
@@ -95,7 +100,7 @@ impl Driver for GpsBabel {
 
     /// Download the data into a file. Return the PathBuf to said file on success.
     /// Caller is responsible for deleting the file.
-    fn download(&self, format: Format, erase: bool) -> Result<PathBuf, Error> {
+    fn download(&self, format: Format, erase: bool, tempdir: &TempDir) -> Result<PathBuf, Error> {
         // we requested erase at the same time and it is not supported.
         if erase && !self.cap.can_erase {
             return Err(Error::Unsupported);
@@ -115,7 +120,6 @@ impl Driver for GpsBabel {
         }
         let extension = extension_opt.unwrap();
 
-        let tempdir = tempfile::tempdir()?;
         let outfile = tempdir.path().join(String::from("gpsami") + extension);
 
         /* gpsbabel -t -w -i m241 -f /dev/ttyACM0 -o gpx -F $1 */

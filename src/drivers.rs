@@ -18,6 +18,7 @@ use std::io;
 use std::path::PathBuf;
 
 use serde::Deserialize;
+use tempfile::TempDir;
 use thiserror::Error;
 
 use crate::Format;
@@ -68,7 +69,7 @@ pub trait Driver {
     fn close(&self) -> bool;
     /// Download the track in specified format
     /// Return the PathBuf pointing to the datafile.
-    fn download(&self, format: Format, erase: bool) -> Result<PathBuf>;
+    fn download(&self, format: Format, erase: bool, tempdir: &TempDir) -> Result<PathBuf>;
     /// Erase the tracks
     fn erase(&self) -> Result<()>;
 }
