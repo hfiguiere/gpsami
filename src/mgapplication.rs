@@ -224,20 +224,15 @@ impl MgApplication {
 
                 chooser.close();
                 match r {
-                    gtk::ResponseType::Ok => {
-                        if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
-                            Self::really_do_download(sender.clone(), device.clone(), output_file);
-                        }
-                    },
-                    gtk::ResponseType::DeleteEvent => {
-
-                    },
-                    _ => {
+                    gtk::ResponseType::Ok => if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
+                        Self::really_do_download(sender.clone(), device.clone(), output_file);
+                    }
+                    gtk::ResponseType::DeleteEvent => {},
+                    _ =>
                         post_event(
                             &sender,
                             MgAction::DoneDownload(Err(drivers::Error::Cancelled)),
-                            );
-                    }
+                        ),
                 }
                 chooser.close();
             }),
@@ -249,30 +244,30 @@ impl MgApplication {
         device: Arc<dyn drivers::Driver + Send + Sync>,
         output_file: path::PathBuf,
     ) {
-        print_on_err!(thread::Builder::new()
-            .name("downloader".into())
-            .spawn(move || {
-                post_event(
-                    &sender,
-                    if device.open() {
-                        let tempdir = tempfile::tempdir();
-                        if let Ok(tempdir) = tempdir {
-                            MgAction::DoneDownload(
-                                device.download(Format::Gpx, false, &tempdir)
-                                    .and_then(|temp_output_filename| {
-                                        log::debug!(
-                                            "success {temp_output_filename:?} -> will copy to {output_file:?}"
+        print_on_err!(
+            thread::Builder::new().name("downloader".into()).spawn(move || {
+                let result = if device.open() {
+                    let tempdir = tempfile::tempdir();
+                    if let Ok(tempdir) = tempdir {
+                        MgAction::DoneDownload(
+                            device.download(Format::Gpx, false, &tempdir)
+                                .and_then(|temp_output_filename| {
+                                    log::debug!(
+                                        "success {temp_output_filename:?} -> will copy to {output_file:?}"
                                             );
-                                        std::fs::copy(temp_output_filename, output_file).map(|_| ()).map_err(drivers::Error::from)
-                                    })
-                                    )
-                        } else {
-                            MgAction::DoneDownload(tempdir.map(|_| ()).map_err(drivers::Error::from))
-                        }
+                                    std::fs::copy(temp_output_filename, output_file).map(|_| ()).map_err(drivers::Error::from)
+                                })
+                            )
                     } else {
-                        MgAction::DoneDownload(Err(drivers::Error::Failed(i18n("Open failed."))))
-                    },
-                );
+                        MgAction::DoneDownload(
+                            tempdir.map(|_| ())
+                                .map_err(drivers::Error::from)
+                        )
+                    }
+                } else {
+                    MgAction::DoneDownload(Err(drivers::Error::Failed(i18n("Open failed."))))
+                };
+                post_event(&sender, result);
             }));
     }
 
