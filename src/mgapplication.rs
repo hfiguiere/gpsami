@@ -69,6 +69,7 @@ pub struct MgApplication {
     model_store: gtk::ListStore,
     port_combo: gtk::ComboBox,
     port_store: gtk::ListStore,
+    toast_overlay: adw::ToastOverlay,
 
     device_manager: devices::Manager,
     prefs_store: glib::KeyFile,
@@ -91,6 +92,9 @@ impl MgApplication {
         let model_combo: gtk::ComboBox = builder.object("model_combo").unwrap();
         let port_combo: gtk::ComboBox = builder.object("port_combo").unwrap();
         let output_dir_chooser: FileChooserButton = builder.object("output_dir_chooser").unwrap();
+        let toast_overlay = builder
+            .object::<adw::ToastOverlay>("toast_overlay")
+            .unwrap();
 
         let (sender, receiver) = async_channel::unbounded::<MgAction>();
 
@@ -154,6 +158,8 @@ impl MgApplication {
             model_store: gtk::ListStore::new(&[glib::Type::STRING, glib::Type::STRING]),
             port_combo,
             port_store: gtk::ListStore::new(&[glib::Type::STRING, glib::Type::STRING]),
+            toast_overlay,
+
             device_manager,
             prefs_store: glib::KeyFile::new(),
             output_dest_dir: path::PathBuf::new(),
@@ -468,7 +474,12 @@ impl MgApplication {
             }
             MgAction::DoneErase(e) => {
                 match e {
-                    Ok(_) | Err(drivers::Error::Cancelled) => {}
+                    Ok(_) => self
+                        .toast_overlay
+                        .add_toast(adw::Toast::new(&i18n("Erase finished."))),
+                    Err(drivers::Error::Cancelled) => self
+                        .toast_overlay
+                        .add_toast(adw::Toast::new(&i18n("Erase cancelled."))),
                     Err(e) => self.report_error(&i18n("Error erasing GPS data."), &e.to_string()),
                 }
                 self.set_state(UiState::Idle);
@@ -478,8 +489,14 @@ impl MgApplication {
                 self.do_download();
             }
             MgAction::DoneDownload(e) => {
+                log::debug!("done download {e:?}");
                 match e {
-                    Ok(_) | Err(drivers::Error::Cancelled) => {}
+                    Ok(_) => self
+                        .toast_overlay
+                        .add_toast(adw::Toast::new(&i18n("Download finished."))),
+                    Err(drivers::Error::Cancelled) => self
+                        .toast_overlay
+                        .add_toast(adw::Toast::new(&i18n("Download cancelled."))),
                     Err(e) => {
                         self.report_error(&i18n("Error downloading GPS data."), &e.to_string())
                     }

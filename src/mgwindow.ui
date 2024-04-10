@@ -47,40 +47,41 @@
           </object>
         </child>
         <child>
-          <object class="GtkLabel" id="label3">
-            <property name="can_focus">0</property>
-            <property name="label" translatable="yes">&lt;b&gt;Output&lt;/b&gt;</property>
-            <property name="use_markup">1</property>
-            <property name="halign">GTK_ALIGN_START</property>
-            <property name="margin_top">18</property>
+          <object class="AdwToastOverlay" id="toast_overlay">
+            <property name="child">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="label3">
+                    <property name="can_focus">0</property>
+                    <property name="label" translatable="yes">&lt;b&gt;Output&lt;/b&gt;</property>
+                    <property name="use_markup">1</property>
+                    <property name="halign">GTK_ALIGN_START</property>
+                    <property name="margin_top">18</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="FileChooserButton" id="output_dir_chooser">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin-start">24</property>
+                    <property name="margin-end">6</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="erase_checkbtn">
+                    <property name="label" translatable="yes">_Erase after download</property>
+                    <property name="use_underline">1</property>
+                    <property name="margin-start">24</property>
+                    <property name="margin-end">6</property>
+                  </object>
+                </child>
+              </object>
+            </property>
             <layout>
               <property name="column">0</property>
               <property name="row">3</property>
               <property name="column-span">2</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="FileChooserButton" id="output_dir_chooser">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin-start">24</property>
-            <property name="margin-end">6</property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">4</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object class="GtkCheckButton" id="erase_checkbtn">
-            <property name="label" translatable="yes">_Erase after download</property>
-            <property name="use_underline">1</property>
-            <property name="margin-start">24</property>
-            <property name="margin-end">6</property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">5</property>
             </layout>
           </object>
         </child>
