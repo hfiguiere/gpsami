@@ -267,10 +267,10 @@ impl MgApplication {
                                     })
                                     )
                         } else {
-                            MgAction::DoneErase(tempdir.map(|_| ()).map_err(drivers::Error::from))
+                            MgAction::DoneDownload(tempdir.map(|_| ()).map_err(drivers::Error::from))
                         }
                     } else {
-                        MgAction::DoneErase(Err(drivers::Error::Failed(i18n("Open failed."))))
+                        MgAction::DoneDownload(Err(drivers::Error::Failed(i18n("Open failed."))))
                     },
                 );
             }));
