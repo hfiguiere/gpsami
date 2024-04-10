@@ -217,16 +217,23 @@ impl MgApplication {
                 log::debug!("Response {r}");
 
                 chooser.close();
-                if r == gtk::ResponseType::Ok {
-                    if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
-                        Self::really_do_download(sender.clone(), device.clone(), output_file);
-                        return;
+                match r {
+                    gtk::ResponseType::Ok => {
+                        if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
+                            Self::really_do_download(sender.clone(), device.clone(), output_file);
+                        }
+                    },
+                    gtk::ResponseType::DeleteEvent => {
+
+                    },
+                    _ => {
+                        post_event(
+                            &sender,
+                            MgAction::DoneDownload(Err(drivers::Error::Cancelled)),
+                            );
                     }
                 }
-                post_event(
-                    &sender,
-                    MgAction::DoneDownload(Err(drivers::Error::Cancelled)),
-                );
+                chooser.close();
             }),
         );
     }
