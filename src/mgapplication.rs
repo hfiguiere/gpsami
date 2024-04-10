@@ -218,6 +218,7 @@ impl MgApplication {
         }
         chooser.show();
 
+        let erase = self.erase_checkbtn.is_active();
         chooser.connect_response(
             glib::clone!(@strong self.sender as sender, @strong device => move |chooser, r| {
                 log::debug!("Response {r}");
@@ -225,7 +226,7 @@ impl MgApplication {
                 chooser.close();
                 match r {
                     gtk::ResponseType::Ok => if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
-                        Self::really_do_download(sender.clone(), device.clone(), output_file);
+                        Self::really_do_download(sender.clone(), device.clone(), erase, output_file);
                     }
                     gtk::ResponseType::DeleteEvent => {},
                     _ =>
@@ -242,6 +243,7 @@ impl MgApplication {
     fn really_do_download(
         sender: Sender<MgAction>,
         device: Arc<dyn drivers::Driver + Send + Sync>,
+        erase: bool,
         output_file: path::PathBuf,
     ) {
         print_on_err!(
@@ -250,7 +252,7 @@ impl MgApplication {
                     let tempdir = tempfile::tempdir();
                     if let Ok(tempdir) = tempdir {
                         MgAction::DoneDownload(
-                            device.download(Format::Gpx, false, &tempdir)
+                            device.download(Format::Gpx, erase, &tempdir)
                                 .and_then(|temp_output_filename| {
                                     log::debug!(
                                         "success {temp_output_filename:?} -> will copy to {output_file:?}"
