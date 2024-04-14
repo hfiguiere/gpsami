@@ -1,13 +1,13 @@
 {
-    "app-id" : "net.figuiere.gpsami",
-    "runtime" : "org.kde.Platform",
-    "runtime-version" : "5.15-22.08",
-    "sdk" : "org.kde.Sdk",
-    "sdk-extensions" : [
+    "app-id": "net.figuiere.gpsami",
+    "runtime": "org.gnome.Platform",
+    "runtime-version": "46",
+    "sdk": "org.gnome.Sdk",
+    "sdk-extensions": [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
-    "command" : "gpsami",
-    "finish-args" : [
+    "command": "gpsami",
+    "finish-args": [
         "--share=network",
         "--share=ipc",
         "--socket=fallback-x11",
@@ -15,103 +15,34 @@
         "--filesystem=home",
         "--device=all"
     ],
-    "build-options" : {
-        "append-path" : "/usr/lib/sdk/rust-stable/bin",
-        "build-args" : [
+    "build-options": {
+        "append-path": "/usr/lib/sdk/rust-stable/bin",
+        "build-args": [
             "--share=network"
         ],
         "env" : {
-            "RUST_BACKTRACE" : "1",
-            "RUSTFLAGS" : "-L=/app/lib",
-            "RUST_LOG" : "gpsami=debug"
+            "RUST_BACKTRACE": "1",
+            "RUSTFLAGS": "-L=/app/lib",
+            "RUST_LOG": "gpsami=debug"
         }
     },
     "cleanup" : [
         "/include",
+        "/lib/girepository-1.0",
         "/lib/pkgconfig",
         "/man",
         "/share/doc",
+        "/share/gir-1.0",
         "/share/gtk-doc",
         "/share/man",
         "/share/pkgconfig",
         "*.la",
         "*.a"
     ],
-    "modules" : [
-    	{
-            "name": "gtk4",
-            "buildsystem": "meson",
-            "config-opts": [
-                "-Ddemos=false",
-                "-Dbuild-examples=false",
-                "-Dbuild-tests=false"
-            ],
-            "sources": [
-                {
-                    "type": "archive",
-                    "url": "https://download.gnome.org/sources/gtk/4.6/gtk-4.6.7.tar.xz",
-                    "sha256": "effd2e7c4b5e2a5c7fad43e0f24adea68baa4092abb0b752caff278e6bb010e8"
-                }
-            ],
-            "modules": [
-                {
-                    "name": "pango",
-                    "buildsystem": "meson",
-                    "sources": [
-                        {
-                            "type": "archive",
-                            "url": "https://download.gnome.org/sources/pango/1.50/pango-1.50.11.tar.xz",
-                            "sha256": "8800f812d89ee61388188703203f3a7878963c22f8695aaf1fa0a1a1428d17ae"
-                        }
-                    ]
-                },
-                {
-                    "name": "libsass",
-                    "sources": [
-                        {
-                            "type": "archive",
-                            "url": "https://github.com/sass/libsass/archive/3.6.4.tar.gz",
-                            "sha256": "f9484d9a6df60576e791566eab2f757a97fd414fce01dd41fc0a693ea5db2889"
-                        },
-                        {
-                            "type": "script",
-                            "dest-filename": "autogen.sh",
-                            "commands": ["autoreconf -si"]
-                        }
-                    ]
-                },
-                {
-                    "name": "sassc",
-                    "sources": [
-                        {
-                            "type": "archive",
-                            "url": "https://github.com/sass/sassc/archive/3.6.1.tar.gz",
-                            "sha256": "8cee391c49a102b4464f86fc40c4ceac3a2ada52a89c4c933d8348e3e4542a60"
-                        },
-                        {
-                            "type": "script",
-                            "dest-filename": "autogen.sh",
-                            "commands": ["autoreconf -si"]
-                        }
-                    ]
-                },
-                {
-	            "name" : "graphene",
-                    "buildsystem": "meson",
-                    "builddir": true,
-                    "config-opts" : ["-Dgtk_doc=false", "-Dgobject_types=true"],
-                    "sources" : [
-                        {
-                            "type" : "git",
-                            "url" : "https://github.com/ebassi/graphene",
-                            "tag" : "1.10.0"
-                        }
-                    ]
-                }
-            ]
-        },
+    "modules": [
         "build-aux/gudev.json",
         "build-aux/libusb.json",
+        "build-aux/qt5.json",
         {
             "name": "gpsbabel",
             "config-opts": [
@@ -126,13 +57,13 @@
             ]
         },
         {
-            "name" : "gpsami",
-            "builddir" : true,
-            "buildsystem" : "meson",
-            "sources" : [
+            "name": "gpsami",
+            "builddir": true,
+            "buildsystem": "meson",
+            "sources": [
                 {
-                    "type" : "git",
-                    "url" : "file:///home/hub/source/gpsami"
+                    "type": "git",
+                    "url": "file:///home/hub/source/gpsami"
                 }
             ]
         }
