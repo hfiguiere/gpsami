@@ -90,7 +90,7 @@ impl ObjectImpl for FileChooserButtonPriv {
                 b,
                 move |w, r| {
                     if r == gtk4::ResponseType::Accept {
-                        b.set_property("file", &w.file());
+                        b.set_property("file", w.file());
                         b.emit_by_name::<()>("file-set", &[]);
                     }
                     b.imp().dialog.replace(None);
