@@ -80,9 +80,13 @@ fn main() {
         action!(
             gapp,
             "quit",
-            glib::clone!(@weak gapp => move |_, _| {
-                gapp.quit();
-            })
+            glib::clone!(
+                #[weak]
+                gapp,
+                move |_, _| {
+                    gapp.quit();
+                }
+            )
         );
 
         app.borrow_mut().start();

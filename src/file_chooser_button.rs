@@ -85,13 +85,17 @@ impl ObjectImpl for FileChooserButtonPriv {
             let file = priv_.file.borrow().as_ref().and_then(|f| f.parent());
             print_on_err!(file_chooser.set_current_folder(file.as_ref()));
 
-            file_chooser.connect_response(glib::clone!(@weak b => move |w, r| {
-                if r == gtk4::ResponseType::Accept {
-                    b.set_property("file", &w.file());
-                    b.emit_by_name::<()>("file-set", &[]);
+            file_chooser.connect_response(glib::clone!(
+                #[weak]
+                b,
+                move |w, r| {
+                    if r == gtk4::ResponseType::Accept {
+                        b.set_property("file", &w.file());
+                        b.emit_by_name::<()>("file-set", &[]);
+                    }
+                    b.imp().dialog.replace(None);
                 }
-                b.imp().dialog.replace(None);
-            }));
+            ));
             file_chooser.show();
         });
     }

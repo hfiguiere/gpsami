@@ -129,13 +129,21 @@ impl MgApplication {
         output_dir_chooser.connect_local(
             "file-set",
             true,
-            glib::clone!(@weak output_dir_chooser, @strong sender => @default-return None, move |_| {
-                let file_name = output_dir_chooser.filename();
-                if let Some(f) = file_name {
-                    post_event(&sender, MgAction::SetOutputDir(f));
+            glib::clone!(
+                #[weak]
+                output_dir_chooser,
+                #[strong]
+                sender,
+                #[upgrade_or]
+                None,
+                move |_| {
+                    let file_name = output_dir_chooser.filename();
+                    if let Some(f) = file_name {
+                        post_event(&sender, MgAction::SetOutputDir(f));
+                    }
+                    None
                 }
-                None
-            })
+            ),
         );
 
         let device_manager = devices::Manager::new();
@@ -170,15 +178,19 @@ impl MgApplication {
 
         let metoo = me.clone();
 
-        glib::spawn_future_local(
-            glib::clone!(@strong receiver as rx, @strong metoo => async move {
+        glib::spawn_future_local(glib::clone!(
+            #[strong(rename_to = rx)]
+            receiver,
+            #[strong]
+            metoo,
+            async move {
                 log::debug!("attaching for {}", std::any::type_name::<MgAction>());
                 while let Ok(message) = rx.recv().await {
                     metoo.borrow_mut().process_event(message);
                 }
                 log::debug!("terminating {}", std::any::type_name::<MgAction>());
-            }),
-        );
+            }
+        ));
 
         if me.borrow_mut().load_settings().is_err() {
             log::error!("Error loading settings");
@@ -219,25 +231,35 @@ impl MgApplication {
         chooser.show();
 
         let erase = self.erase_checkbtn.is_active();
-        chooser.connect_response(
-            glib::clone!(@strong self.sender as sender, @strong device => move |chooser, r| {
+        chooser.connect_response(glib::clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            #[strong]
+            device,
+            move |chooser, r| {
                 log::debug!("Response {r}");
 
                 chooser.close();
                 match r {
-                    gtk::ResponseType::Ok => if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
-                        Self::really_do_download(sender.clone(), device.clone(), erase, output_file);
+                    gtk::ResponseType::Ok => {
+                        if let Some(output_file) = chooser.file().and_then(|f| f.path()) {
+                            Self::really_do_download(
+                                sender.clone(),
+                                device.clone(),
+                                erase,
+                                output_file,
+                            );
+                        }
                     }
-                    gtk::ResponseType::DeleteEvent => {},
-                    _ =>
-                        post_event(
-                            &sender,
-                            MgAction::DoneDownload(Err(drivers::Error::Cancelled)),
-                        ),
+                    gtk::ResponseType::DeleteEvent => {}
+                    _ => post_event(
+                        &sender,
+                        MgAction::DoneDownload(Err(drivers::Error::Cancelled)),
+                    ),
                 }
                 chooser.close();
-            }),
-        );
+            }
+        ));
     }
 
     fn really_do_download(

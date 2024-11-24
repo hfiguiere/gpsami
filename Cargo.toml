@@ -1,19 +1,19 @@
 [package]
 name = "gpsami"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Hubert Figuière <hub@figuiere.net>"]
 license = "GPL-3"
 edition = "2018"
 
 [dependencies]
-adw = { version = "^0.6", features = ["v1_2"], package = "libadwaita" }
+adw = { version = "^0.7", features = ["v1_2"], package = "libadwaita" }
 async-channel = "2.2.0"
 dirs-next = "^2.0.0"
 env_logger = "0.10.0"
 gettext-rs = { version = "0.7.0", features = ["gettext-system"] }
-gtk4 = "^0.8"
+gtk4 = "^0.9"
 gtk-macros = "^0.3.0"
-gudev = "^0.16.0"
+gudev = "^0.17.0"
 libudev = "0.2.0"
 log = "0.4.14"
 once_cell = "1.18"
