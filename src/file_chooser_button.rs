@@ -1,5 +1,5 @@
 //
-// (c) 2021-2024 Hubert Figuière
+// (c) 2021-2025 Hubert Figuière
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ use gtk4::subclass::prelude::*;
 glib::wrapper! {
     pub struct FileChooserButton(
         ObjectSubclass<FileChooserButtonPriv>)
-        @extends gtk4::Button, gtk4::Widget;
+        @extends gtk4::Button, gtk4::Widget,
+        @implements gtk4::Accessible, gtk4::Actionable, gtk4::Buildable, gtk4::ConstraintTarget;
 }
 
 impl FileChooserButton {
